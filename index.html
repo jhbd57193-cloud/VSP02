@@ -28,13 +28,11 @@
 
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* ПОВІЛЬНА АНІМАЦІЯ */
         @keyframes slowFadeUp {
             from { transform: translateY(80px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* ЕКРАН ВХОДУ - ТЕПЕР ВИЩЕ ЦЕНТРУ */
         #authScreen { 
             position: fixed; inset: 0; z-index: 9999; 
             display: flex; align-items: center; justify-content: center;
@@ -46,26 +44,23 @@
             width: 100%; max-width: 400px; text-align: center; 
             border: 1px solid rgba(251, 191, 36, 0.5);
             box-shadow: 0 0 60px rgba(0,0,0,0.8);
-            margin-bottom: 10vh; /* ПІДНЯВ ВИЩЕ */
+            margin-bottom: 15vh;
             animation: slowFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* SIDEBAR */
         .sidebar { width: 280px; background: rgba(15, 23, 42, 0.95); border-right: 1px solid var(--glass); display: flex; flex-direction: column; backdrop-filter: blur(15px); }
         .nav-item { padding: 16px 25px; cursor: pointer; transition: 0.3s; font-weight: 500; display: flex; align-items: center; gap: 12px; color: #94a3b8; }
         .nav-item.active { color: var(--gold); background: rgba(251, 191, 36, 0.1); border-left: 4px solid var(--gold); }
 
-        /* CONTENT */
         .main { flex: 1; padding: 40px; overflow-y: auto; }
         .section { animation: slowFadeUp 0.8s ease-out; }
         .card { background: var(--card); border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid var(--glass); }
 
-        /* MODALS - ТЕПЕР ПО ЦЕНТРУ */
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; align-items: center; justify-content: center; }
         .modal-box { width: 100%; max-width: 480px; background: #1e293b; border-radius: 25px; padding: 40px; border: 1px solid var(--gold); animation: slowFadeUp 0.6s ease-out; }
 
         input, select, textarea { width: 100%; padding: 15px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass); color: #fff; border-radius: 12px; outline: none; box-sizing: border-box; }
-        .btn { background: var(--gold); color: #000; border: none; padding: 15px 22px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
+        .btn { background: var(--gold); color: #000; border: none; padding: 15px 22px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 11px; transition: 0.3s; }
         .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
         .btn-danger { background: var(--danger); color: white; }
 
@@ -107,7 +102,7 @@
                 <div class="card" style="display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--gold);">
                     <div>
                         <h2 style="margin:0;">Оперативне управління</h2>
-                        <p style="font-size: 12px; color: #94a3b8;">Швидкий доступ до журналів</p>
+                        <p style="font-size: 12px; color: #94a3b8;">Система синхронізації ВСП</p>
                     </div>
                     <div style="display:flex; gap: 8px;">
                         <button class="btn" onclick="core.openM('m-car')">+ Авто</button>
@@ -136,10 +131,8 @@
     </div>
 
     <div id="m-car" class="modal"><div class="modal-box"><h3>Нове Авто</h3><input id="c1" placeholder="Держ. Номер"><input id="c2" placeholder="Марка"><input id="c3" placeholder="Власник"><select id="c4"><option value="У парку">У парку</option><option value="У патрулі">У патрулі</option></select><button class="btn" onclick="core.save('cars')" style="width:100%">Зберегти</button><button class="btn" style="width:100%; background:none; color:#fff;" onclick="core.cls()">Закрити</button></div></div>
-    
     <div id="m-sol" class="modal"><div class="modal-box"><h3>Новий Бієць</h3><input id="f1" placeholder="ПІБ"><input id="f2" placeholder="Звання"><input id="f3" placeholder="Посада"><button class="btn" onclick="core.save('sol')" style="width:100%">Додати</button><button class="btn" style="width:100%; background:none; color:#fff;" onclick="core.cls()">Закрити</button></div></div>
-
-    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патрулювання</h3><input id="p1" placeholder="Склад патруля (Прізвища)"><input id="p2" placeholder="Маршрут/Сектор"><textarea id="p3" placeholder="Опис подій чи результат"></textarea><button class="btn" onclick="core.save('patrol')" style="width:100%">Відправити звіт</button><button class="btn" style="width:100%; background:none; color:#fff;" onclick="core.cls()">Закрити</button></div></div>
+    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патрулювання</h3><input id="p1" placeholder="Склад патруля"><input id="p2" placeholder="Маршрут/Сектор"><textarea id="p3" placeholder="Результат"></textarea><button class="btn" onclick="core.save('patrol')" style="width:100%">Відправити звіт</button><button class="btn" style="width:100%; background:none; color:#fff;" onclick="core.cls()">Закрити</button></div></div>
 
     <script>
         const firebaseConfig = { databaseURL: "https://vsp-02-default-rtdb.europe-west1.firebasedatabase.app/" };
@@ -148,7 +141,6 @@
 
         const core = {
             user: null,
-
             autoLogin() {
                 const saved = localStorage.getItem('vsp_session');
                 if (saved) {
@@ -157,12 +149,10 @@
                     this.init();
                 }
             },
-
             login() {
                 const l = document.getElementById('uL').value.trim();
                 const p = document.getElementById('uP').value;
                 if(!l || !p) return alert('Заповніть поля!');
-
                 db.ref('users/owner').once('value', (s) => {
                     const admin = s.val();
                     if(admin && admin.p === p) {
@@ -175,25 +165,16 @@
                             this.init();
                         });
                     } else alert('НЕВІРНИЙ ПАРОЛЬ');
-                });
+                }, (err) => alert("Помилка бази: " + err.code));
             },
-
             logout() { localStorage.removeItem('vsp_session'); location.reload(); },
-
             setRole(username, role) {
-                db.ref('users/' + username + '/r').set(role).then(() => {
-                    alert('Роль для ' + username + ' змінена на ' + role);
-                    this.sync();
-                });
+                db.ref('users/' + username + '/r').set(role).then(() => { this.sync(); });
             },
-
             deleteUser(username) {
-                if(username === 'owner') return alert('Неможливо видалити головного!');
-                if(confirm('Видалити доступ для ' + username + '?')) {
-                    db.ref('users/' + username).remove().then(() => this.sync());
-                }
+                if(username === 'owner') return alert('Неможливо!');
+                if(confirm('Видалити ' + username + '?')) db.ref('users/' + username).remove().then(() => this.sync());
             },
-
             init() {
                 const label = this.user.r === 'admin' ? 'АДМІНІСТРАТОР' : 'БОЄЦЬ ВСП';
                 document.getElementById('uLabel').innerText = `${label} // ${this.user.l.toUpperCase()}`;
@@ -201,50 +182,39 @@
                 db.ref('data').on('value', () => this.sync());
                 if(this.user.r === 'admin') db.ref('users').on('value', () => this.sync());
             },
-
             nav(id, el) {
                 document.querySelectorAll('.section').forEach(s => s.style.display='none');
                 document.getElementById('s-'+id).style.display='block';
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 el.classList.add('active');
             },
-
             openM(id) { document.getElementById(id).style.display='flex'; },
             cls() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); },
-
             save(t) {
                 let d = { author: this.user.l, ts: Date.now() };
                 if(t==='cars') d={...d, a:document.getElementById('c1').value, b:document.getElementById('c2').value, c:document.getElementById('c3').value, s:document.getElementById('c4').value};
                 if(t==='sol') d={...d, a:document.getElementById('f1').value, b:document.getElementById('f2').value, c:document.getElementById('f3').value};
                 if(t==='patrol') d={...d, t:new Date().toLocaleString(), s:document.getElementById('p1').value, m:document.getElementById('p2').value, r:document.getElementById('p3').value};
-                db.ref('data/' + t).push(d).then(() => { this.cls(); this.sync(); });
+                db.ref('data/' + t).push(d).then(() => { this.cls(); });
             },
-
             del(t, id) {
                 if(this.user.r !== 'admin' && t !== 'sol') return alert('Тільки адмін!');
-                if(confirm('Видалити запис?')) db.ref('data/' + t + '/' + id).remove();
+                if(confirm('Видалити?')) db.ref('data/' + t + '/' + id).remove();
             },
-
             sync() {
                 db.ref('data').once('value', (snapshot) => {
                     const data = snapshot.val() || {};
                     const cars = data.cars || {}, sol = data.sol || {}, pat = data.patrol || {};
-                    const isAdm = (this.user.r === 'admin');
-
                     document.getElementById('v0').innerText = Object.keys(cars).length;
                     document.getElementById('v1').innerText = Object.keys(sol).length;
                     document.getElementById('v2').innerText = Object.keys(pat).length;
-
-                    let hC=''; for(let id in cars) hC+=`<tr><td><b>${cars[id].a}</b></td><td>${cars[id].b}</td><td>${cars[id].c}</td><td>${cars[id].s}</td><td>${isAdm?`<button class="btn-danger" style="padding:5px" onclick="core.del('cars','${id}')">X</button>`:'-'}</td></tr>`;
+                    let hC=''; for(let id in cars) hC+=`<tr><td><b>${cars[id].a}</b></td><td>${cars[id].b}</td><td>${cars[id].c}</td><td>${cars[id].s}</td><td><button class="btn-danger" style="padding:5px" onclick="core.del('cars','${id}')">X</button></td></tr>`;
                     document.getElementById('tCars').querySelector('tbody').innerHTML = hC;
-
                     let hS=''; for(let id in sol) hS+=`<tr><td>${sol[id].a}</td><td>${sol[id].b}</td><td>${sol[id].c}</td><td><button class="btn-danger" style="padding:5px" onclick="core.del('sol','${id}')">X</button></td></tr>`;
                     document.getElementById('tSol').querySelector('tbody').innerHTML = hS;
-
-                    let hP=''; for(let id in pat) hP+=`<tr><td>${pat[id].t}</td><td>${pat[id].s}</td><td>${pat[id].m}</td><td>${pat[id].r}</td><td>${isAdm?`<button class="btn-danger" style="padding:5px" onclick="core.del('patrol','${id}')">X</button>`:'-'}</td></tr>`;
+                    let hP=''; for(let id in pat) hP+=`<tr><td>${pat[id].t}</td><td>${pat[id].s}</td><td>${pat[id].m}</td><td>${pat[id].r}</td><td><button class="btn-danger" style="padding:5px" onclick="core.del('patrol','${id}')">X</button></td></tr>`;
                     document.getElementById('tPatrol').querySelector('tbody').innerHTML = hP;
                 });
-
                 if(this.user.r === 'admin') {
                     db.ref('users').once('value', (s) => {
                         const u = s.val() || {};
@@ -260,7 +230,6 @@
                 }
             }
         };
-
         window.onload = () => core.autoLogin();
     </script>
 </body>
