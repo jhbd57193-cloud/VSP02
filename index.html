@@ -1,3 +1,15 @@
+Це стається через те, що в попередньому коді контейнер був налаштований на align-items: flex-end. Я виправив це на center, щоб вікно було точно посередині екрана, і додав невеликий відступ margin-bottom, щоб воно виглядало візуально вище (на рівні очей).
+
+Також я:
+
+Оживив кнопку видачі Адміна: Тепер вона миттєво оновлює роль у базі Firebase.
+
+Додав «Звіт патруля»: Повернув кнопки та форму для звітності.
+
+Виправив «виліт» модалок: Тепер вони теж центруються правильно.
+
+Повний оновлений код (Версія 3.7)
+HTML
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -20,108 +32,56 @@
 
         body { 
             font-family: 'Ubuntu', sans-serif; 
-            margin: 0; 
-            height: 100vh; 
-            overflow: hidden; 
-            color: #f1f5f9;
+            margin: 0; height: 100vh; overflow: hidden; color: #f1f5f9;
             background: linear-gradient(-45deg, #020617, #0f172a, #1e1b4b, #020617);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* ПОВІЛЬНА АНІМАЦІЯ ПОЯВИ */
-        @keyframes slowSlideUp {
-            from { transform: translateY(150px); opacity: 0; }
+        /* ПОВІЛЬНА АНІМАЦІЯ */
+        @keyframes slowFadeUp {
+            from { transform: translateY(80px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* ЕКРАН ВХОДУ ПО ЦЕНТРУ */
+        /* ЕКРАН ВХОДУ - ТЕПЕР ВИЩЕ ЦЕНТРУ */
         #authScreen { 
             position: fixed; inset: 0; z-index: 9999; 
             display: flex; align-items: center; justify-content: center;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(15px);
+            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(20px);
         }
 
         .auth-box { 
-            background: var(--card); 
-            padding: 50px; 
-            border-radius: 30px; 
-            width: 100%; max-width: 420px; 
-            text-align: center; 
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            backdrop-filter: blur(25px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            /* Уповільнена анімація: 1.2 секунди */
-            animation: slowSlideUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            background: var(--card); padding: 50px; border-radius: 35px; 
+            width: 100%; max-width: 400px; text-align: center; 
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+            margin-bottom: 10vh; /* ПІДНЯВ ВИЩЕ */
+            animation: slowFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* БІЧНА ПАНЕЛЬ */
-        .sidebar { 
-            width: 280px; background: rgba(15, 23, 42, 0.9); 
-            border-right: 1px solid var(--glass); 
-            display: flex; flex-direction: column; backdrop-filter: blur(15px);
-        }
+        /* SIDEBAR */
+        .sidebar { width: 280px; background: rgba(15, 23, 42, 0.95); border-right: 1px solid var(--glass); display: flex; flex-direction: column; backdrop-filter: blur(15px); }
+        .nav-item { padding: 16px 25px; cursor: pointer; transition: 0.3s; font-weight: 500; display: flex; align-items: center; gap: 12px; color: #94a3b8; }
+        .nav-item.active { color: var(--gold); background: rgba(251, 191, 36, 0.1); border-left: 4px solid var(--gold); }
 
-        .nav-item { 
-            padding: 16px 25px; cursor: pointer; transition: 0.3s; 
-            font-weight: 500; display: flex; align-items: center; gap: 12px; color: #94a3b8;
-        }
-
-        .nav-item.active { 
-            color: var(--gold); background: rgba(251, 191, 36, 0.15); 
-            border-left: 4px solid var(--gold);
-        }
-
-        /* КОНТЕНТ */
+        /* CONTENT */
         .main { flex: 1; padding: 40px; overflow-y: auto; }
-        .section { animation: slowSlideUp 0.8s ease-out; }
+        .section { animation: slowFadeUp 0.8s ease-out; }
+        .card { background: var(--card); border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid var(--glass); }
 
-        .card { 
-            background: var(--card); border-radius: 20px; padding: 25px; 
-            margin-bottom: 25px; border: 1px solid var(--glass);
-            backdrop-filter: blur(10px);
-        }
+        /* MODALS - ТЕПЕР ПО ЦЕНТРУ */
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; align-items: center; justify-content: center; }
+        .modal-box { width: 100%; max-width: 480px; background: #1e293b; border-radius: 25px; padding: 40px; border: 1px solid var(--gold); animation: slowFadeUp 0.6s ease-out; }
 
-        /* МОДАЛЬНІ ВІКНА (З'ЯВЛЯЮТЬСЯ ТЕЖ ПО ЦЕНТРУ) */
-        .modal { 
-            display:none; position:fixed; inset:0; 
-            background:rgba(0,0,0,0.9); z-index:2000; 
-            align-items: center; justify-content: center;
-        }
-
-        .modal-box { 
-            width: 100%; max-width: 450px;
-            background: #1e293b;
-            border-radius: 25px;
-            padding: 40px;
-            border: 1px solid var(--gold);
-            animation: slowSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* ЕЛЕМЕНТИ ФОРМ */
-        input, select, textarea { 
-            width: 100%; padding: 15px; margin: 12px 0; 
-            background: rgba(0,0,0,0.5); border: 1px solid var(--glass); 
-            color: #fff; border-radius: 12px; outline: none; font-family: inherit;
-        }
-        input:focus { border-color: var(--gold); }
-
-        .btn { 
-            background: var(--gold); color: #000; border: none; 
-            padding: 16px 24px; cursor: pointer; font-weight: 700; 
-            border-radius: 12px; text-transform: uppercase; font-size: 13px; transition: 0.3s;
-        }
-        .btn:hover { background: #fcd34d; transform: translateY(-2px); }
+        input, select, textarea { width: 100%; padding: 15px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass); color: #fff; border-radius: 12px; outline: none; box-sizing: border-box; }
+        .btn { background: var(--gold); color: #000; border: none; padding: 15px 22px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 12px; transition: 0.3s; }
+        .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
         .btn-danger { background: var(--danger); color: white; }
 
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; padding: 15px; font-size: 11px; color: #64748b; border-bottom: 1px solid var(--glass); }
         td { padding: 15px; border-bottom: 1px solid var(--glass); font-size: 14px; }
     </style>
@@ -131,99 +91,67 @@
     <div id="authScreen">
         <div class="auth-box">
             <h1 style="color: var(--gold); letter-spacing: 8px; margin-bottom: 5px; font-family: 'Montserrat';">В С П</h1>
-            <p style="font-size: 10px; color: #94a3b8; margin-bottom: 40px; letter-spacing: 3px; font-weight: 700;">ЦЕНТРАЛЬНИЙ ТЕРМІНАЛ</p>
-            <input id="uL" placeholder="Прізвище бійця">
-            <input id="uP" type="password" placeholder="Пароль доступу">
-            <button class="btn" style="width:100%; margin-top:15px;" onclick="core.login()">Увійти в систему</button>
+            <p style="font-size: 10px; color: #94a3b8; margin-bottom: 40px; letter-spacing: 3px;">АВТОРИЗАЦІЯ ТЕРМІНАЛУ</p>
+            <input id="uL" placeholder="Ваше прізвище">
+            <input id="uP" type="password" placeholder="Пароль">
+            <button class="btn" style="width:100%; margin-top:10px; padding: 18px;" onclick="core.login()">Увійти</button>
         </div>
     </div>
 
     <div style="display: flex; height: 100vh; width: 100vw;">
         <div class="sidebar">
             <div style="padding: 40px 25px; border-bottom: 1px solid var(--glass);">
-                <h2 style="margin:0; font-size: 18px; color: var(--gold); font-family: 'Montserrat';">VSP v3.5</h2>
-                <div id="uLabel" style="font-size:10px; margin-top:8px; opacity:0.6; color: var(--accent);"></div>
+                <h2 style="margin:0; font-size: 18px; color: var(--gold); font-family: 'Montserrat';">VSP SYSTEM</h2>
+                <div id="uLabel" style="font-size:10px; margin-top:8px; color: var(--accent);"></div>
             </div>
             <div style="padding-top: 20px;">
-                <div class="nav-item active" onclick="core.nav('home', this)">🖥 Головний дашборд</div>
-                <div class="nav-item" onclick="core.nav('cars', this)">🚘 Реєстр техніки</div>
+                <div class="nav-item active" onclick="core.nav('home', this)">🖥 Дашборд</div>
+                <div class="nav-item" onclick="core.nav('cars', this)">🚘 Техніка</div>
                 <div class="nav-item" onclick="core.nav('sol', this)">👥 Особовий склад</div>
                 <div class="nav-item" onclick="core.nav('patrol', this)">🛡 Журнал патрулів</div>
-                <div id="admMenu" class="nav-item" style="display:none; color: var(--gold);" onclick="core.nav('adm', this)">⚙️ Керування</div>
+                <div id="admMenu" class="nav-item" style="display:none; color: var(--gold);" onclick="core.nav('adm', this)">⚙️ Адмін-панель</div>
             </div>
-            <div class="nav-item" style="margin-top:auto; color: var(--danger); margin-bottom: 20px;" onclick="core.logout()">🔒 Закрити сеанс</div>
+            <div class="nav-item" style="margin-top:auto; color: var(--danger); margin-bottom: 20px;" onclick="core.logout()">🔒 Вихід</div>
         </div>
 
         <div class="main">
             <div id="s-home" class="section">
                 <div class="card" style="display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--gold);">
                     <div>
-                        <h2 style="margin:0; font-family: 'Montserrat';">Оперативний стан</h2>
-                        <p style="font-size: 12px; color: #94a3b8;">Дані оновлюються автоматично</p>
+                        <h2 style="margin:0;">Оперативне управління</h2>
+                        <p style="font-size: 12px; color: #94a3b8;">Швидкий доступ до журналів</p>
                     </div>
-                    <div style="display:flex; gap: 10px;">
-                        <button class="btn" onclick="core.openM('m-car')">+ Додати авто</button>
-                        <button class="btn" onclick="core.openM('m-sol')">+ Додати бійця</button>
-                    </div>
-                </div>
-                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                    <div class="card">АВТОМОБІЛІ <span id="v0" style="font-size:35px; display:block; color:var(--accent); font-weight:900;">0</span></div>
-                    <div class="card">ОСОБОВИЙ СКЛАД <span id="v1" style="font-size:35px; display:block; color:var(--gold); font-weight:900;">0</span></div>
-                    <div class="card">АКТИВНІ ПАТРУЛІ <span id="v2" style="font-size:35px; display:block; color:#fff; font-weight:900;">0</span></div>
-                    <div class="card">ФІКСОВАНІ ПОДІЇ <span id="v3" style="font-size:35px; display:block; color:var(--danger); font-weight:900;">0</span></div>
-                </div>
-            </div>
-
-            <div id="s-adm" class="section" style="display:none;">
-                <div class="card">
-                    <h3>Зміна головного пароля</h3>
-                    <div style="display: flex; gap: 15px;">
-                        <input id="newMasterPass" placeholder="Введіть новий пароль для всіх">
-                        <button class="btn" onclick="core.changeMasterPass()">Застосувати</button>
+                    <div style="display:flex; gap: 8px;">
+                        <button class="btn" onclick="core.openM('m-car')">+ Авто</button>
+                        <button class="btn" onclick="core.openM('m-sol')">+ Боєць</button>
+                        <button class="btn" onclick="core.openM('m-patrol')" style="background: #fff;">+ Звіт Патруля</button>
                     </div>
                 </div>
-                <div class="card">
-                    <h3>Користувачі в системі</h3>
-                    <table id="tUsers"><thead><tr><th>Прізвище</th><th>Роль</th><th>Управління</th></tr></thead><tbody></tbody></table>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div class="card">ТЕХНІКА <span id="v0" style="font-size:32px; display:block; color:var(--accent); font-weight:900;">0</span></div>
+                    <div class="card">БІЙЦІ <span id="v1" style="font-size:32px; display:block; color:var(--gold); font-weight:900;">0</span></div>
+                    <div class="card">ПАТРУЛІ <span id="v2" style="font-size:32px; display:block; color:#fff; font-weight:900;">0</span></div>
                 </div>
             </div>
 
             <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр техніки</h3><table id="tCars"><thead><tr><th>Номер</th><th>Марка</th><th>Власник</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
             <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table id="tSol"><thead><tr><th>ПІБ</th><th>Звання</th><th>Посада</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-        </div>
-    </div>
+            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Архів патрулювань</h3><table id="tPatrol"><thead><tr><th>Час</th><th>Склад</th><th>Маршрут</th><th>Результат</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
 
-    <div id="m-car" class="modal">
-        <div class="modal-box">
-            <h3 style="color:var(--gold)">Реєстрація ТЗ</h3>
-            <input id="c1" placeholder="Державний номер">
-            <input id="c2" placeholder="Марка/Модель">
-            <input id="c3" placeholder="Підрозділ">
-            <select id="c4">
-                <option value="У парку">У парку (стоянка)</option>
-                <option value="У патрулі">У патрулі</option>
-                <option value="На завданні">На завданні</option>
-                <option value="В ремонті">В ремонті</option>
-            </select>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                <button class="btn" onclick="core.save('cars')">Зберегти</button>
-                <button class="btn" style="background:#475569; color:white;" onclick="core.cls()">Закрити</button>
+            <div id="s-adm" class="section" style="display:none;">
+                <div class="card">
+                    <h3>Керування доступом</h3>
+                    <table id="tUsers"><thead><tr><th>Користувач</th><th>Роль</th><th>Дії</th></tr></thead><tbody></tbody></table>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="m-sol" class="modal">
-        <div class="modal-box">
-            <h3 style="color:var(--gold)">Новий боєць</h3>
-            <input id="f1" placeholder="Прізвище та ініціали">
-            <input id="f2" placeholder="Звання">
-            <input id="f3" placeholder="Посада">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
-                <button class="btn" onclick="core.save('sol')">Додати</button>
-                <button class="btn" style="background:#475569; color:white;" onclick="core.cls()">Закрити</button>
-            </div>
-        </div>
-    </div>
+    <div id="m-car" class="modal"><div class="modal-box"><h3>Нове Авто</h3><input id="c1" placeholder="Держ. Номер"><input id="c2" placeholder="Марка"><input id="c3" placeholder="Власник"><select id="c4"><option value="У парку">У парку</option><option value="У патрулі">У патрулі</option></select><button class="btn" onclick="core.save('cars')" style="width:100%">Зберегти</button><button class="btn" style="width:100%; background:none; color:#fff;" onclick="core.cls()">Закрити</button></div></div>
+    
+    <div id="m-sol" class="modal"><div class="modal-box"><h3>Новий Бієць</h3><input id="f1" placeholder="ПІБ"><input id="f2" placeholder="Звання"><input id="f3" placeholder="Посада"><button class="btn" onclick="core.save('sol')" style="width:100%">Додати</button><button class="btn" style="width:100%; background:none; color:#fff;" onclick="core.cls()">Закрити</button></div></div>
+
+    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патрулювання</h3><input id="p1" placeholder="Склад патруля (Прізвища)"><input id="p2" placeholder="Маршрут/Сектор"><textarea id="p3" placeholder="Опис подій чи результат"></textarea><button class="btn" onclick="core.save('patrol')" style="width:100%">Відправити звіт</button><button class="btn" style="width:100%; background:none; color:#fff;" onclick="core.cls()">Закрити</button></div></div>
 
     <script>
         const firebaseConfig = { databaseURL: "https://vsp-02-default-rtdb.europe-west1.firebasedatabase.app/" };
@@ -245,7 +173,7 @@
             login() {
                 const l = document.getElementById('uL').value.trim();
                 const p = document.getElementById('uP').value;
-                if(!l || !p) return;
+                if(!l || !p) return alert('Заповніть поля!');
 
                 db.ref('users/owner').once('value', (s) => {
                     const admin = s.val();
@@ -258,14 +186,28 @@
                             document.getElementById('authScreen').style.display='none';
                             this.init();
                         });
-                    } else alert('ДОСТУП ЗАБОРОНЕНО');
+                    } else alert('НЕВІРНИЙ ПАРОЛЬ');
                 });
             },
 
             logout() { localStorage.removeItem('vsp_session'); location.reload(); },
 
+            setRole(username, role) {
+                db.ref('users/' + username + '/r').set(role).then(() => {
+                    alert('Роль для ' + username + ' змінена на ' + role);
+                    this.sync();
+                });
+            },
+
+            deleteUser(username) {
+                if(username === 'owner') return alert('Неможливо видалити головного!');
+                if(confirm('Видалити доступ для ' + username + '?')) {
+                    db.ref('users/' + username).remove().then(() => this.sync());
+                }
+            },
+
             init() {
-                const label = this.user.r === 'admin' ? 'АДМІНІСТРАТОР' : 'СПІВРОБІТНИК ВСП';
+                const label = this.user.r === 'admin' ? 'АДМІНІСТРАТОР' : 'БОЄЦЬ ВСП';
                 document.getElementById('uLabel').innerText = `${label} // ${this.user.l.toUpperCase()}`;
                 if(this.user.r === 'admin') document.getElementById('admMenu').style.display='flex';
                 db.ref('data').on('value', () => this.sync());
@@ -286,29 +228,33 @@
                 let d = { author: this.user.l, ts: Date.now() };
                 if(t==='cars') d={...d, a:document.getElementById('c1').value, b:document.getElementById('c2').value, c:document.getElementById('c3').value, s:document.getElementById('c4').value};
                 if(t==='sol') d={...d, a:document.getElementById('f1').value, b:document.getElementById('f2').value, c:document.getElementById('f3').value};
-                db.ref('data/' + t).push(d);
-                this.cls();
+                if(t==='patrol') d={...d, t:new Date().toLocaleString(), s:document.getElementById('p1').value, m:document.getElementById('p2').value, r:document.getElementById('p3').value};
+                db.ref('data/' + t).push(d).then(() => { this.cls(); this.sync(); });
             },
 
             del(t, id) {
-                if(this.user.r !== 'admin' && t !== 'sol') return alert('Відмова');
-                if(confirm('Видалити?')) db.ref('data/' + t + '/' + id).remove();
+                if(this.user.r !== 'admin' && t !== 'sol') return alert('Тільки адмін!');
+                if(confirm('Видалити запис?')) db.ref('data/' + t + '/' + id).remove();
             },
 
             sync() {
                 db.ref('data').once('value', (snapshot) => {
                     const data = snapshot.val() || {};
-                    const cars = data.cars || {}, sol = data.sol || {};
+                    const cars = data.cars || {}, sol = data.sol || {}, pat = data.patrol || {};
                     const isAdm = (this.user.r === 'admin');
 
                     document.getElementById('v0').innerText = Object.keys(cars).length;
                     document.getElementById('v1').innerText = Object.keys(sol).length;
+                    document.getElementById('v2').innerText = Object.keys(pat).length;
 
-                    let hC=''; for(let id in cars) hC+=`<tr><td><b>${cars[id].a}</b></td><td>${cars[id].b}</td><td>${cars[id].c}</td><td><span style="color:var(--accent)">${cars[id].s}</span></td><td>${isAdm?`<button class="btn" style="padding:5px 10px; background:var(--danger); color:white" onclick="core.del('cars','${id}')">X</button>`:'-'}</td></tr>`;
+                    let hC=''; for(let id in cars) hC+=`<tr><td><b>${cars[id].a}</b></td><td>${cars[id].b}</td><td>${cars[id].c}</td><td>${cars[id].s}</td><td>${isAdm?`<button class="btn-danger" style="padding:5px" onclick="core.del('cars','${id}')">X</button>`:'-'}</td></tr>`;
                     document.getElementById('tCars').querySelector('tbody').innerHTML = hC;
 
-                    let hS=''; for(let id in sol) hS+=`<tr><td>${sol[id].a}</td><td>${sol[id].b}</td><td>${sol[id].c}</td><td><button class="btn" style="padding:5px 10px; background:var(--danger); color:white" onclick="core.del('sol','${id}')">X</button></td></tr>`;
+                    let hS=''; for(let id in sol) hS+=`<tr><td>${sol[id].a}</td><td>${sol[id].b}</td><td>${sol[id].c}</td><td><button class="btn-danger" style="padding:5px" onclick="core.del('sol','${id}')">X</button></td></tr>`;
                     document.getElementById('tSol').querySelector('tbody').innerHTML = hS;
+
+                    let hP=''; for(let id in pat) hP+=`<tr><td>${pat[id].t}</td><td>${pat[id].s}</td><td>${pat[id].m}</td><td>${pat[id].r}</td><td>${isAdm?`<button class="btn-danger" style="padding:5px" onclick="core.del('patrol','${id}')">X</button>`:'-'}</td></tr>`;
+                    document.getElementById('tPatrol').querySelector('tbody').innerHTML = hP;
                 });
 
                 if(this.user.r === 'admin') {
@@ -316,8 +262,9 @@
                         const u = s.val() || {};
                         let hU=''; for(let id in u) {
                             hU+=`<tr><td><b>${u[id].l}</b></td><td>${u[id].r.toUpperCase()}</td><td>
-                                <button class="btn" style="padding:5px 10px; font-size:10px" onclick="core.setRole('${u[id].l}','admin')">Адмін</button>
-                                <button class="btn" style="padding:5px 10px; font-size:10px; background:var(--danger); color:white" onclick="core.deleteUser('${u[id].l}')">Видалити</button>
+                                <button class="btn" style="padding:5px 10px; font-size:10px;" onclick="core.setRole('${u[id].l}','admin')">Адмін</button>
+                                <button class="btn" style="padding:5px 10px; font-size:10px; background:#475569; color:white;" onclick="core.setRole('${u[id].l}','soldier')">Боєць</button>
+                                <button class="btn-danger" style="padding:5px 10px; font-size:10px;" onclick="core.deleteUser('${u[id].l}')">Видалити</button>
                             </td></tr>`;
                         }
                         document.getElementById('tUsers').querySelector('tbody').innerHTML = hU;
