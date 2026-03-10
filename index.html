@@ -75,7 +75,7 @@
         <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>ОСОБОВИЙ СКЛАД</h3><table id="tSol"><thead><tr><th>ПІБ</th><th>Звання</th><th>Посада</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
         <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>АРХІВ ПАТРУЛЮВАНЬ</h3><table id="tPatrol"><thead><tr><th>Дата/Час</th><th>Склад</th><th>Маршрут</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
         <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>КАНАЛ ПРАВОПОРУШЕНЬ</h3><table id="tCrime"><thead><tr><th>Дата</th><th>Об'єкт</th><th>Опис</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-        <div id="s-adm" class="section" style="display:none;"><div class="card"><h3>КЕРУВАННЯ ДОСТУПОМ</h3><table id="tUsers"><thead><tr><th>Логін</th><th>Роль</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+        <div id="s-adm" class="section" style="display:none;"><div class="card"><h3>КЕРУВАННЯ КОРИСТУВАЧАМИ</h3><table id="tUsers"><thead><tr><th>Логін</th><th>Роль</th><th>Дії адміністратора</th></tr></thead><tbody></tbody></table></div></div>
     </div>
 
     <div id="m-car" class="modal"><div class="modal-box card" style="width:400px"><h3>РЕЄСТРАЦІЯ ТЗ</h3><input id="c1" placeholder="Держ. номер"><input id="c2" placeholder="Марка/Модель"><input id="c3" placeholder="Власник"><button class="btn" onclick="core.save('cars')">ЗБЕРЕГТИ</button><button class="btn" style="background:#333" onclick="core.cls()">X</button></div></div>
@@ -94,7 +94,7 @@
                 const l = document.getElementById('uL').value, p = document.getElementById('uP').value;
                 if(!l || !p) return alert('Заповніть поля!');
                 const role = (l.toLowerCase() === 'owner') ? 'admin' : 'soldier';
-                db.ref('users/' + l).set({ l, p, r: role }).then(() => alert('Жетон зареєстровано! Увійдіть.'));
+                db.ref('users/' + l).set({ l, p, r: role }).then(() => alert('Жетон зареєстровано!'));
             },
             login() {
                 const l = document.getElementById('uL').value, p = document.getElementById('uP').value;
@@ -132,11 +132,18 @@
                 this.cls();
             },
             del(t, id) {
-                if(this.user.r !== 'admin' && t !== 'sol') return alert('Лише Адмін може видаляти звіти!');
+                if(this.user.r !== 'admin' && t !== 'sol') return alert('Тільки Адмін!');
                 if(confirm('Видалити запис?')) db.ref('data/' + t + '/' + id).remove();
             },
+            // ФУНКЦІЇ ДЛЯ АДМІНА
             setRole(l, r) {
                 db.ref('users/' + l + '/r').set(r);
+            },
+            deleteUser(l) {
+                if(l === 'owner') return alert('Неможливо видалити головного адміністратора!');
+                if(confirm(`Остаточно видалити користувача ${l}?`)) {
+                    db.ref('users/' + l).remove().then(() => alert('Користувача видалено'));
+                }
             },
             sync() {
                 db.ref('data').once('value', (snapshot) => {
@@ -165,7 +172,17 @@
                 if(this.user.r === 'admin') {
                     db.ref('users').once('value', (s) => {
                         const u = s.val() || {};
-                        let hU=''; for(let id in u) hU+=`<tr><td>${u[id].l}</td><td>${u[id].r}</td><td><button class="btn" onclick="core.setRole('${u[id].l}','admin')">Адмін</button><button class="btn" style="background:#555" onclick="core.setRole('${u[id].l}','soldier')">Боєць</button></td></tr>`;
+                        let hU=''; for(let id in u) {
+                            hU+=`<tr>
+                                <td><b>${u[id].l}</b></td>
+                                <td>${u[id].r.toUpperCase()}</td>
+                                <td>
+                                    <button class="btn" style="background:#555" onclick="core.setRole('${u[id].l}','admin')">АДМІН</button>
+                                    <button class="btn" style="background:#555" onclick="core.setRole('${u[id].l}','soldier')">БОЄЦЬ</button>
+                                    <button class="btn btn-danger" onclick="core.deleteUser('${u[id].l}')">ВИДАЛИТИ</button>
+                                </td>
+                            </tr>`;
+                        }
                         document.getElementById('tUsers').querySelector('tbody').innerHTML = hU;
                     });
                 }
