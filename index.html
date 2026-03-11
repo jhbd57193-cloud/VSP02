@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВСП: ТЕРМІНАЛ v5.0</title>
+    <title>ВСП: ТЕРМІНАЛ v5.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --gold: #fbbf24; --bg: #020617; --card: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --danger: #f43f5e; --glass: rgba(255, 255, 255, 0.05); }
+        :root { --gold: #fbbf24; --bg: #020617; --card: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --danger: #f43f5e; --glass: rgba(255, 255, 255, 0.05); --curator: #a855f7; }
         body { font-family: 'Ubuntu', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: #f1f5f9; background: #020617; }
         
         .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(10px); }
@@ -25,19 +25,17 @@
         .card { background: var(--card); border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--glass); }
         
         .tag { padding: 3px 8px; border-radius: 5px; font-size: 9px; font-weight: 800; text-transform: uppercase; border: 1px solid; display: inline-block; }
+        .tag-curator { border-color: var(--curator); color: var(--curator); }
         .tag-adm { border-color: var(--gold); color: var(--gold); }
-        .tag-mid { border-color: var(--accent); color: var(--accent); }
         .tag-low { border-color: #94a3b8; color: #94a3b8; }
 
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.4); border: 1px solid var(--glass); color: #fff; border-radius: 10px; outline: none; font-family: inherit; }
-        .btn { background: var(--gold); color: #000; border: none; padding: 12px 20px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 10px; transition: 0.2s; }
-        .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .btn { background: var(--gold); color: #000; border: none; padding: 12px 20px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 10px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; }
         .btn-danger { background: var(--danger); color: white; padding: 5px 8px; border-radius: 5px; border:none; cursor:pointer; font-size: 9px; }
         
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; font-size: 10px; color: #64748b; border-bottom: 1px solid var(--glass); text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid var(--glass); font-size: 13px; }
-
         #authScreen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #020617; }
     </style>
 </head>
@@ -53,46 +51,47 @@
 
     <div style="display: flex; height: 100vh;">
         <div class="sidebar">
-            <div style="padding: 25px;"><h2 style="color: var(--gold); font-size: 15px; margin:0;">VSP SYSTEM</h2><div id="uLabel" style="font-size:10px; color: var(--accent); margin-top:5px;"></div></div>
-            <div class="nav-item active" onclick="core.nav('home', this)">🖥 Головна</div>
-            <div class="nav-item" onclick="core.nav('sol', this)">👥 Склад</div>
-            <div class="nav-item" onclick="core.nav('patrol', this)">🛡 Патрулі</div>
+            <div style="padding: 25px;"><h2 style="color: var(--gold); font-size: 15px; margin:0;">VSP SYSTEM</h2><div id="uLabel" style="font-size:10px; color: var(--curator); margin-top:5px; font-weight:bold;"></div></div>
+            <div class="nav-item active" onclick="core.nav('home', this)">🖥 Дашборд</div>
+            <div class="nav-item" onclick="core.nav('sol', this)">👥 Особовий склад</div>
+            <div class="nav-item" onclick="core.nav('patrol', this)">🛡 Журнал патрулів</div>
             <div class="nav-item" onclick="core.nav('crime', this)">⚠️ Порушення</div>
             <div class="nav-item" onclick="core.nav('criminal', this)" style="color:#f87171">⚖️ Кримінальні справи</div>
-            <div id="admMenu" class="nav-item" style="display:none; color: var(--gold);" onclick="core.nav('adm', this)">⚙️ Керування тегами</div>
+            <div id="admMenu" class="nav-item" style="display:none; color: var(--gold);" onclick="core.nav('adm', this)">⚙️ Адмін-панель</div>
             <div class="nav-item" style="margin-top:auto; color: var(--danger);" onclick="core.logout()">🔒 Вихід</div>
         </div>
 
         <div class="main">
             <div id="s-home" class="section">
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>Оперативна панель</h3>
-                    <div id="actionBtns" style="display:none; gap:10px;">
-                        <button class="btn" onclick="core.openM('m-patrol')">+ Новий Патруль</button>
-                        <button class="btn" onclick="core.openM('m-crime')">+ Порушення</button>
-                        <button class="btn" onclick="core.openM('m-criminal')" style="background:#f87171; color:white;">+ Відкрити Справу</button>
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center; border-left: 4px solid var(--curator);">
+                    <div>
+                        <h3 style="margin:0">Центр Управління</h3>
+                        <p style="font-size:10px; color:#94a3b8; margin:5px 0 0 0">Вітаємо, Кураторе</p>
+                    </div>
+                    <div id="actionBtns" style="display:flex; gap:10px;">
+                        <button class="btn" onclick="core.openM('m-patrol')">+ ПАТРУЛЬ</button>
+                        <button class="btn" onclick="core.openM('m-crime')">+ ПОРУШЕННЯ</button>
+                        <button class="btn" onclick="core.openM('m-criminal')" style="background:#f87171; color:white;">+ КРИМІНАЛ</button>
                     </div>
                 </div>
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                    <div class="card">ПАТРУЛІ (7дн) <b id="v2" style="display:block; font-size:24px;">0</b></div>
-                    <div class="card">ПОРУШЕННЯ <b id="v3" style="display:block; font-size:24px; color:var(--danger)">0</b></div>
-                    <div class="card">КРИМІНАЛ <b id="v4" style="display:block; font-size:24px; color:#f87171">0</b></div>
+                    <div class="card">ТЕХНІКА <b id="v1" style="display:block; font-size:24px; color:var(--accent)">0</b></div>
+                    <div class="card">БІЙЦІ <b id="v2" style="display:block; font-size:24px; color:var(--gold)">0</b></div>
+                    <div class="card">ПАТРУЛІ (7дн) <b id="v3" style="display:block; font-size:24px; color:var(--curator)">0</b></div>
                 </div>
             </div>
 
-            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table id="tSol"><thead><tr><th>Посада</th><th>ПІБ</th><th>Звання</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><table id="tPatrol"><thead><tr><th>Дата</th><th>Склад патруля</th><th>Звіт/Опис</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Адміністративні порушення</h3><table id="tCrime"><thead><tr><th>Дата</th><th>Порушник</th><th>Опис</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні провадження</h3><table id="tCriminal"><thead><tr><th>№ Справи</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-adm" class="section" style="display:none;"><div class="card"><h3>Керування доступом (Теги)</h3><table id="tUsers"><thead><tr><th>Користувач</th><th>Поточний тег</th><th>Новий тег</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Склад</h3><table id="tSol"><thead><tr><th>Посада</th><th>ПІБ</th><th>Звання</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Патрулі (Авто-очищення)</h3><table id="tPatrol"><thead><tr><th>Дата</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><table id="tCrime"><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінал</h3><table id="tCriminal"><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-adm" class="section" style="display:none;"><div class="card"><h3>Керування тегами</h3><table id="tUsers"><thead><tr><th>Логін</th><th>Тег</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
         </div>
     </div>
 
-    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патруля</h3><input id="p1" placeholder="Склад (Прізвища)"><textarea id="p2" style="height:100px" placeholder="Опис подій або посилання на фото/відео"></textarea><button class="btn" style="width:100%" onclick="core.save('patrol')">Зберегти звіт</button><button class="btn" style="width:100%; background:none; margin-top:5px; color:#fff" onclick="core.cls()">Скасувати</button></div></div>
-    
-    <div id="m-crime" class="modal"><div class="modal-box"><h3>Реєстрація порушення</h3><input id="cr1" placeholder="ПІБ Порушника"><textarea id="cr2" placeholder="Суть порушення"></textarea><button class="btn" style="width:100%" onclick="core.save('crime')">Зафіксувати</button><button class="btn" style="width:100%; background:none; margin-top:5px; color:#fff" onclick="core.cls()">Закрити</button></div></div>
-    
-    <div id="m-criminal" class="modal"><div class="modal-box"><h3>Кримінальна справа</h3><input id="crm1" placeholder="№ Справи"><input id="crm2" placeholder="Стаття"><input id="crm3" placeholder="Фігурант"><textarea id="crm4" placeholder="Посилання на докази"></textarea><button class="btn" style="width:100%; background:#f87171; color:white" onclick="core.save('criminal')">Відкрити справу</button><button class="btn" style="width:100%; background:none; margin-top:5px; color:#fff" onclick="core.cls()">Закрити</button></div></div>
+    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патруля</h3><input id="p1" placeholder="Склад"><textarea id="p2" placeholder="Опис"></textarea><button class="btn" style="width:100%" onclick="core.save('patrol')">Зберегти</button><button class="btn" style="width:100%; background:none; color:#fff; margin-top:5px" onclick="core.cls()">Закрити</button></div></div>
+    <div id="m-crime" class="modal"><div class="modal-box"><h3>Реєстрація порушення</h3><input id="cr1" placeholder="ПІБ"><textarea id="cr2" placeholder="Суть"></textarea><button class="btn" style="width:100%" onclick="core.save('crime')">Зберегти</button><button class="btn" style="width:100%; background:none; color:#fff; margin-top:5px" onclick="core.cls()">Закрити</button></div></div>
+    <div id="m-criminal" class="modal"><div class="modal-box"><h3>Кримінальна справа</h3><input id="crm1" placeholder="№"><input id="crm2" placeholder="Стаття"><input id="crm3" placeholder="Фігурант"><textarea id="crm4" placeholder="Докази"></textarea><button class="btn" style="width:100%; background:#f87171; color:white" onclick="core.save('criminal')">Відкрити</button><button class="btn" style="width:100%; background:none; color:#fff; margin-top:5px" onclick="core.cls()">Закрити</button></div></div>
 
     <script>
         const firebaseConfig = { databaseURL: "https://vsp-02-default-rtdb.europe-west1.firebasedatabase.app/" };
@@ -100,10 +99,11 @@
         const db = firebase.database();
 
         const POSITIONS = {
-            "1": {n:"Нач.ВСП", c:"tag-adm"}, "2": {n:"Заст.Нач.ВСП", c:"tag-adm"},
-            "3": {n:"Нач.НЦ.ВСП", c:"tag-mid"}, "4": {n:"Заст.Нач.НЦ.ВСП", c:"tag-mid"},
-            "5": {n:"Ст.Інст.ВСП", c:"tag-mid"}, "6": {n:"Інст.ВСП", c:"tag-mid"},
-            "7": {n:"Бієць ВСП", c:"tag-low"}, "8": {n:"Курсант ВСП", c:"tag-low"}
+            "0": {n:"Куратор ВСП", c:"tag-curator"},
+            "1": {n:"Нач.ВСП", c:"tag-adm"},
+            "2": {n:"Заст.Нач.ВСП", c:"tag-adm"},
+            "7": {n:"Бієць ВСП", c:"tag-low"},
+            "8": {n:"Курсант ВСП", c:"tag-low"}
         };
 
         const core = {
@@ -118,13 +118,13 @@
                 db.ref('users/owner').once('value', (s) => {
                     if(s.val() && s.val().p === p) {
                         db.ref('users/' + l).once('value', (u) => {
-                            const userData = u.val() || { l: l, p: p, pos: "8" };
+                            const userData = u.val() || { l: l, p: p, pos: (l==='owner'?"0":"8") };
                             if(!u.val()) db.ref('users/'+l).set(userData);
                             this.user = userData;
                             localStorage.setItem('vsp_session', JSON.stringify(this.user));
                             location.reload();
                         });
-                    } else alert('ПАРОЛЬ НЕВІРНИЙ');
+                    } else alert('НЕВІРНИЙ ПАРОЛЬ');
                 });
             },
             logout() { localStorage.removeItem('vsp_session'); location.reload(); },
@@ -132,38 +132,27 @@
                 document.getElementById('authScreen').style.display='none';
                 db.ref('users/' + this.user.l).on('value', (snap) => {
                     this.user = snap.val();
-                    const p = POSITIONS[this.user.pos];
+                    const p = POSITIONS[this.user.pos] || POSITIONS["8"];
                     document.getElementById('uLabel').innerText = `${p.n} // ${this.user.l}`;
                     
-                    const isFullAdmin = ["1","2"].includes(this.user.pos) || this.user.l === 'owner';
-                    const isStaff = this.user.pos !== "8"; // Всі крім курсантів можуть додавати
+                    const isStaff = parseInt(this.user.pos) <= 7;
+                    const isBoss = ["0","1","2"].includes(this.user.pos) || this.user.l === 'owner';
 
-                    document.getElementById('admMenu').style.display = isFullAdmin ? 'flex' : 'none';
+                    document.getElementById('admMenu').style.display = isBoss ? 'flex' : 'none';
                     document.getElementById('actionBtns').style.display = isStaff ? 'flex' : 'none';
 
-                    // АВТО-ОЧИЩЕННЯ (Кожних 7 днів)
-                    if(isStaff) this.autoClear();
-                    
+                    this.autoClear();
                     db.ref('data').on('value', () => this.sync());
-                    if(isFullAdmin) db.ref('users').on('value', () => this.syncUsers());
+                    if(isBoss) db.ref('users').on('value', () => this.syncUsers());
                 });
             },
-            
             autoClear() {
                 const now = Date.now();
-                const limit = 7 * 24 * 60 * 60 * 1000;
-                ['patrol', 'crime', 'criminal'].forEach(path => {
-                    db.ref('data/' + path).once('value', (s) => {
-                        const items = s.val();
-                        for(let k in items) {
-                            if(items[k].created_at && (now - items[k].created_at > limit)) {
-                                db.ref(`data/${path}/${k}`).remove();
-                            }
-                        }
-                    });
+                db.ref('data/patrol').once('value', (s) => {
+                    const d = s.val();
+                    for(let k in d) if(d[k].exp && now > d[k].exp) db.ref('data/patrol/'+k).remove();
                 });
             },
-
             nav(id, el) {
                 document.querySelectorAll('.section').forEach(s => s.style.display='none');
                 document.getElementById('s-'+id).style.display='block';
@@ -172,43 +161,31 @@
             },
             openM(id) { document.getElementById(id).classList.add('active'); },
             cls() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
-            
             save(t) {
-                let d = { 
-                    author: this.user.l, 
-                    ts: new Date().toLocaleString('uk-UA'), 
-                    created_at: Date.now() 
-                };
-                if(t==='patrol') d={...d, s: document.getElementById('p1').value, r: document.getElementById('p2').value };
-                if(t==='crime') d={...d, n: document.getElementById('cr1').value, s: document.getElementById('cr2').value };
-                if(t==='criminal') d={...d, n: document.getElementById('crm1').value, s: document.getElementById('crm2').value, f: document.getElementById('crm3').value, m: document.getElementById('crm4').value };
-                
-                db.ref('data/' + t).push(d).then(() => {
-                    this.cls();
-                    // Очистка полів
-                    if(t==='patrol') { document.getElementById('p1').value=''; document.getElementById('p2').value=''; }
-                });
+                let d = { author: this.user.l, ts: new Date().toLocaleString('uk-UA'), exp: Date.now() + (7*24*60*60*1000) };
+                if(t==='patrol') d={...d, a: document.getElementById('p1').value, b: document.getElementById('p2').value };
+                if(t==='crime') d={...d, a: document.getElementById('cr1').value, b: document.getElementById('cr2').value };
+                if(t==='criminal') d={...d, a: document.getElementById('crm1').value, b: document.getElementById('crm2').value, c: document.getElementById('crm3').value };
+                db.ref('data/' + t).push(d).then(() => this.cls());
             },
-
             syncUsers() {
                 db.ref('users').once('value', (snap) => {
                     const us = snap.val() || {};
                     let h = '';
                     for(let k in us) {
                         if(k === 'owner') continue;
-                        h += `<tr><td><b>${us[k].l}</b></td><td><span class="tag ${POSITIONS[us[k].pos].c}">${POSITIONS[us[k].pos].n}</span></td>
-                        <td><select onchange="db.ref('users/${us[k].l}/pos').set(this.value)"><option disabled selected>Вибрати...</option>
-                        <option value="1">Нач.ВСП</option><option value="2">Заст.Нач.ВСП</option><option value="7">Бієць</option><option value="8">Курсант</option></select></td></tr>`;
+                        h += `<tr><td>${us[k].l}</td><td><span class="tag ${POSITIONS[us[k].pos].c}">${POSITIONS[us[k].pos].n}</span></td>
+                        <td><select onchange="db.ref('users/${us[k].l}/pos').set(this.value)">
+                        <option value="8">Курсант</option><option value="7">Бієць</option><option value="2">Заступник</option><option value="1">Начальник</option><option value="0">Куратор</option>
+                        </select></td></tr>`;
                     }
                     document.getElementById('tUsers').querySelector('tbody').innerHTML = h;
                 });
             },
-
             sync() {
                 db.ref('data').once('value', (snap) => {
                     const d = snap.val() || {};
-                    const canDel = ["1","2","3","4"].includes(this.user.pos);
-                    
+                    const canDel = ["0","1","2"].includes(this.user.pos);
                     const render = (id, data, cols) => {
                         let h = '';
                         for(let k in data) {
@@ -216,24 +193,13 @@
                             cols.forEach(c => h += `<td>${data[k][c] || ''}</td>`);
                             h += `<td>${canDel ? `<button class="btn-danger" onclick="db.ref('data/${id}/${k}').remove()">X</button>` : '-'}</td></tr>`;
                         }
-                        const table = document.getElementById('t' + id.charAt(0).toUpperCase() + id.slice(1));
-                        if(table) table.querySelector('tbody').innerHTML = h;
+                        const t = document.getElementById('t' + id.charAt(0).toUpperCase() + id.slice(1));
+                        if(t) t.querySelector('tbody').innerHTML = h;
                     };
-
-                    render('patrol', d.patrol, ['ts', 's', 'r']);
-                    render('crime', d.crime, ['ts', 'n', 's']);
-                    render('criminal', d.criminal, ['n', 's', 'f']);
-                    
-                    // Особовий склад (сортування)
-                    let solArr = []; for(let k in d.sol) solArr.push({...d.sol[k], id: k});
-                    solArr.sort((a,b)=>a.pos-b.pos);
-                    let hS = ''; 
-                    solArr.forEach(b => hS += `<tr><td><span class="tag ${POSITIONS[b.pos].c}">${POSITIONS[b.pos].n}</span></td><td>${b.a}</td><td>${b.b}</td><td>${canDel?`<button class="btn-danger" onclick="db.ref('data/sol/${b.id}').remove()">X</button>`:'-'}</td></tr>`);
-                    document.getElementById('tSol').querySelector('tbody').innerHTML = hS;
-
-                    document.getElementById('v2').innerText = Object.keys(d.patrol || {}).length;
-                    document.getElementById('v3').innerText = Object.keys(d.crime || {}).length;
-                    document.getElementById('v4').innerText = Object.keys(d.criminal || {}).length;
+                    render('patrol', d.patrol, ['ts', 'a', 'b']);
+                    render('crime', d.crime, ['ts', 'a', 'b']);
+                    render('criminal', d.criminal, ['a', 'b', 'c']);
+                    document.getElementById('v3').innerText = Object.keys(d.patrol || {}).length;
                 });
             }
         };
