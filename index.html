@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВСП: ТЕРМІНАЛ v7.3 (Admin Full Access)</title>
+    <title>ВСП: ТЕРМІНАЛ v7.4 (Secure Hierarchy)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -12,9 +12,9 @@
         :root { --gold: #fbbf24; --bg: #020617; --card: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --danger: #f43f5e; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Ubuntu', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: #f1f5f9; background: #020617; }
         
-        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s ease-out; backdrop-filter: blur(10px); }
+        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s; backdrop-filter: blur(10px); }
         .modal.active { opacity: 1; pointer-events: auto; }
-        .modal-box { width: 100%; max-width: 450px; background: #1e293b; border-radius: 30px; padding: 35px; border: 2px solid var(--gold); transform: translateY(100vh); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); }
+        .modal-box { width: 100%; max-width: 450px; background: #1e293b; border-radius: 30px; padding: 35px; border: 2px solid var(--gold); transform: translateY(100vh); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1); }
         .modal.active .modal-box { transform: translateY(0); }
 
         .sidebar { width: 260px; background: #0f172a; border-right: 1px solid var(--glass); display: flex; flex-direction: column; }
@@ -44,7 +44,7 @@
             <h2 style="color:var(--gold); margin-bottom:20px;">ВСП: ТЕРМІНАЛ</h2>
             <input id="uL" placeholder="Прізвище">
             <input id="uP" type="password" placeholder="Пароль">
-            <button id="authBtn" class="btn" style="width:100%; margin-top:15px;">УВІЙТИ / РЕЄСТРАЦІЯ</button>
+            <button id="authBtn" class="btn" style="width:100%; margin-top:15px;">УВІЙТИ</button>
         </div>
     </div>
 
@@ -58,6 +58,7 @@
             <div class="nav-item" onclick="core.nav('crime', this)">⚠️ Порушення</div>
             <div class="nav-item" onclick="core.nav('criminal', this)" style="color:#f87171">⚖️ Кримінальні справи</div>
             <div id="admMenu" class="nav-item" style="display:none; color:var(--gold);" onclick="core.nav('adm', this)">⚙️ Адмін-панель</div>
+            <div id="pwdMenu" class="nav-item" style="display:none; color:var(--accent);" onclick="core.nav('adm', this)">🔑 Зміна паролів</div>
             <div class="nav-item" style="margin-top:auto; color:var(--danger);" onclick="core.logout()">🔒 Вихід</div>
         </div>
 
@@ -82,23 +83,16 @@
             </div>
 
             <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table id="tSol"><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><table id="tCars"><thead><tr><th>Марка</th><th>Номер</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><table id="tPatrol"><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><table id="tCrime"><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні справи</h3><table id="tCriminal"><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><table><thead><tr><th>Марка</th><th>Номер</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><table><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><table><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні справи</h3><table><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
             
             <div id="s-adm" class="section" style="display:none;">
                 <div class="card">
-                    <h3>Керування доступом</h3>
+                    <h3>Керування доступом та Паролі</h3>
                     <table id="tUsers">
-                        <thead>
-                            <tr>
-                                <th>ПІБ</th>
-                                <th>Посада</th>
-                                <th>Пароль (редагувати)</th>
-                                <th>Дія</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>ПІБ</th><th>Посада</th><th>Пароль (редагувати)</th><th>Дія</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -116,9 +110,15 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // ОНОВЛЕНИЙ СПИСОК РОЛЕЙ
         const POSITIONS = { 
-            "0": {n:"Куратор ВСП", c:"#a855f7"}, "1": {n:"Начальник", c:"#fbbf24"}, 
-            "2": {n:"Заст. Нач.", c:"#fbbf24"}, "8": {n:"Курсант ВСП", c:"#64748b"} 
+            "0": {n:"Куратор ВСП", c:"#a855f7"}, 
+            "1": {n:"Начальник", c:"#fbbf24"}, 
+            "2": {n:"Заст. Нач.", c:"#fbbf24"},
+            "3": {n:"Нач. НЦ", c:"#38bdf8"},
+            "4": {n:"Заст. Нач. НЦ", c:"#38bdf8"},
+            "7": {n:"Бієць", c:"#10b981"},
+            "8": {n:"Курсант ВСП", c:"#64748b"} 
         };
 
         const core = {
@@ -130,18 +130,13 @@
             },
             login() {
                 const l = document.getElementById('uL').value.trim(), p = document.getElementById('uP').value;
-                if(!l || !p) return this.toast("❌ Поля пусті");
                 db.ref('users/' + l).once('value', (s) => {
                     const u = s.val();
-                    if(u) {
-                        if(u.p === p) { this.user = u; this.finish(); }
-                        else this.toast("❌ Пароль невірний");
-                    } else {
-                        if(p === "5588") {
-                            this.user = { l: l, p: p, pos: (l === 'Артем Кацура' ? "0" : "8") };
-                            db.ref('users/' + l).set(this.user).then(() => this.finish());
-                        } else this.toast("❌ Код: 5588");
-                    }
+                    if(u && u.p === p) { this.user = u; this.finish(); }
+                    else if(!u && p === "5588") {
+                        this.user = { l: l, p: p, pos: (l === 'Артем Кацура' ? "0" : "8") };
+                        db.ref('users/' + l).set(this.user).then(() => this.finish());
+                    } else this.toast("❌ Помилка входу");
                 });
             },
             finish() { localStorage.setItem('vsp_session', JSON.stringify(this.user)); location.reload(); },
@@ -153,7 +148,10 @@
                     this.user = s.val(); if(!this.user) this.logout();
                     const p = POSITIONS[this.user.pos || "8"];
                     document.getElementById('uLabel').innerHTML = `<span style="color:${p.c}">${p.n}</span> // ${this.user.l}`;
-                    document.getElementById('admMenu').style.display = (["0", "1", "2"].includes(String(this.user.pos))) ? 'flex' : 'none';
+                    
+                    const isAdm = ["0", "1", "2", "3", "4"].includes(String(this.user.pos));
+                    document.getElementById('admMenu').style.display = isAdm ? 'flex' : 'none';
+                    document.getElementById('pwdMenu').style.display = isAdm ? 'flex' : 'none';
                     this.sync();
                 });
             },
@@ -175,7 +173,7 @@
             },
             sync() {
                 db.ref('data').on('value', (snap) => {
-                    const d = snap.val() || {}, can = ["0", "1", "2"].includes(String(this.user.pos));
+                    const d = snap.val() || {}, can = ["0", "1", "2", "3", "4"].includes(String(this.user.pos));
                     const render = (id, data, cols) => {
                         let h = ''; for(let k in data) {
                             h += `<tr>`; cols.forEach(c => h += `<td>${data[k][c] || ''}</td>`);
@@ -190,19 +188,26 @@
                     document.getElementById('v4').innerText = Object.keys(d.crime || {}).length;
                     document.getElementById('v5').innerText = Object.keys(d.criminal || {}).length;
                 });
+                
                 db.ref('users').on('value', (snap) => {
                     const us = snap.val() || {}; let hS = '', hA = '';
                     Object.values(us).forEach(u => {
                         const p = POSITIONS[u.pos || "8"];
                         hS += `<tr><td><span style="color:${p.c}">${p.n}</span></td><td>${u.l}</td><td>Online</td><td>-</td></tr>`;
-                        if(["0","1","2"].includes(String(this.user.pos))) {
+                        
+                        if(["0","1","2","3","4"].includes(String(this.user.pos))) {
+                            // ЗАХИСТ ТВОГО ПРОФІЛЮ
+                            const isProtected = u.l === 'Артем Кацура';
                             const isMe = u.l === this.user.l;
+                            
                             hA += `<tr><td>${u.l}</td><td>
-                                <select onchange="db.ref('users/${u.l}/pos').set(this.value)">${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${u.pos===k?'selected':''}>${v.n}</option>`).join('')}</select>
+                                <select ${isProtected && !isMe ? 'disabled' : ''} onchange="db.ref('users/${u.l}/pos').set(this.value)">
+                                    ${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${u.pos===k?'selected':''}>${v.n}</option>`).join('')}
+                                </select>
                             </td><td>
-                                <input type="text" value="${u.p || ''}" style="width:100px; padding:5px;" onchange="db.ref('users/${u.l}/p').set(this.value); core.toast('Пароль змінено')">
+                                <input type="text" value="${u.p || ''}" ${isProtected && !isMe ? 'disabled' : ''} style="width:100px; padding:5px;" onchange="db.ref('users/${u.l}/p').set(this.value); core.toast('Пароль змінено')">
                             </td><td>
-                                ${isMe ? '-' : `<button class="btn-red" onclick="if(confirm('Видалити ${u.l}?')) db.ref('users/${u.l}').remove()">ВИДАЛИТИ</button>`}
+                                ${isProtected || isMe ? '-' : `<button class="btn-red" onclick="if(confirm('Видалити ${u.l}?')) db.ref('users/${u.l}').remove()">ВИДАЛИТИ</button>`}
                             </td></tr>`;
                         }
                     });
