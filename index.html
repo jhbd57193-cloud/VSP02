@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВСП: ТЕРМІНАЛ v6.9 (Modal Animation)</title>
+    <title>ВСП: ТЕРМІНАЛ v7.0 (Stable UI)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -12,54 +12,60 @@
         :root { --gold: #fbbf24; --bg: #020617; --card: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --danger: #f43f5e; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Ubuntu', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: #f1f5f9; background: #020617; }
         
-        /* ЦЕ ТЕ, ЩО ТИ ПРОСИВ: АНІМАЦІЯ ВІКОН ЗНИЗУ ВГОРУ */
+        /* АНІМАЦІЯ ВІКОН ЗНИЗУ ВГОРУ */
         .modal { 
             position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); 
             z-index: 2000; display: flex; align-items: center; justify-content: center; 
             opacity: 0; pointer-events: none; transition: 0.4s ease-out; backdrop-filter: blur(10px); 
         }
         .modal.active { opacity: 1; pointer-events: auto; }
-        
         .modal-box { 
             width: 100%; max-width: 450px; background: #1e293b; border-radius: 30px; 
             padding: 35px; border: 2px solid var(--gold);
-            /* Початкова позиція вікна - нижче екрана */
             transform: translateY(100vh);
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
         }
         .modal.active .modal-box { transform: translateY(0); }
 
+        /* Sidebar & Layout */
         .sidebar { width: 260px; background: #0f172a; border-right: 1px solid var(--glass); display: flex; flex-direction: column; }
         .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 13px; }
         .nav-item.active { color: var(--gold); background: rgba(251, 191, 36, 0.1); border-left: 4px solid var(--gold); }
         .main { flex: 1; padding: 30px; overflow-y: auto; background: #020617; }
         .card { background: var(--card); border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--glass); }
-        .btn { background: var(--gold); color: #000; border: none; padding: 10px 16px; cursor: pointer; font-weight: 700; border-radius: 10px; text-transform: uppercase; font-size: 10px; }
+        .btn { background: var(--gold); color: #000; border: none; padding: 10px 18px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 10px; }
         .btn-red { background: var(--danger); color: white; }
         input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--glass); color: #fff; border-radius: 10px; box-sizing: border-box; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; }
         td, th { padding: 12px; text-align: left; border-bottom: 1px solid var(--glass); font-size: 13px; }
+        
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; pointer-events: none; }
+        .toast { background: #1e293b; color: white; padding: 15px 30px; border-radius: 15px; border: 2px solid var(--gold); animation: rise 0.5s ease-out; margin-top: 5px; }
+        @keyframes rise { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
+
+    <div id="toast-container"></div>
 
     <div id="authScreen" style="position:fixed; inset:0; z-index:9999; background:#020617; display:flex; align-items:center; justify-content:center;">
         <div style="background:#1e293b; padding:45px; border-radius:35px; border:2px solid var(--gold); width:300px; text-align:center;">
             <h2 style="color:var(--gold); margin-bottom:20px;">ВСП: ТЕРМІНАЛ</h2>
             <input id="uL" placeholder="Прізвище">
             <input id="uP" type="password" placeholder="Пароль">
-            <button class="btn" style="width:100%; margin-top:15px;" onclick="core.login()">Увійти</button>
+            <button class="btn" style="width:100%; margin-top:15px;" onclick="core.login()">Увійти / Реєстрація</button>
         </div>
     </div>
 
     <div style="display:flex; height:100vh;">
         <div class="sidebar">
-            <div style="padding:25px;"><h2 style="color:var(--gold); font-size:16px;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; opacity:0.6;">...</div></div>
+            <div style="padding:25px;"><h2 style="color:var(--gold); font-size:16px;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; opacity:0.6;">Завантаження...</div></div>
             <div class="nav-item active" onclick="core.nav('home', this)">🖥 Головна панель</div>
             <div class="nav-item" onclick="core.nav('sol', this)">👥 Особовий склад</div>
             <div class="nav-item" onclick="core.nav('cars', this)">🚗 Реєстр авто</div>
             <div class="nav-item" onclick="core.nav('patrol', this)">🛡 Журнал патрулів</div>
             <div class="nav-item" onclick="core.nav('crime', this)">⚠️ Порушення</div>
+            <div class="nav-item" onclick="core.nav('criminal', this)" style="color:#f87171">⚖️ Кримінальні справи</div>
             <div id="admMenu" class="nav-item" style="display:none; color:var(--gold);" onclick="core.nav('adm', this)">⚙️ Адмін-панель</div>
             <div class="nav-item" style="margin-top:auto; color:var(--danger);" onclick="core.logout()">🔒 Вихід</div>
         </div>
@@ -84,7 +90,13 @@
                 </div>
             </div>
 
-            </div>
+            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table id="tSol"><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><table id="tCars"><thead><tr><th>Марка</th><th>Номер</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><table id="tPatrol"><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><table id="tCrime"><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні справи</h3><table id="tCriminal"><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-adm" class="section" style="display:none;"><div class="card"><h3>Адмін-панель</h3><table id="tUsers"><thead><tr><th>ПІБ</th><th>Посада</th><th>Доступ</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
     </div>
 
     <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патруля</h3><input id="p1" placeholder="Склад"><textarea id="p2" placeholder="Опис"></textarea><button class="btn" style="width:100%" onclick="core.save('patrol')">Зберегти</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
@@ -93,14 +105,104 @@
     <div id="m-criminal" class="modal"><div class="modal-box"><h3>Нове КП</h3><input id="crm1" placeholder="№ Справи"><input id="crm2" placeholder="Стаття"><input id="crm3" placeholder="Фігурант"><button class="btn btn-red" style="width:100%" onclick="core.save('criminal')">Створити справу</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
 
     <script>
-        // ... (Тут іде весь JS код з версії 6.8, він працює ідеально) ...
-        // Головне - функція cls() та openM(id) тепер працюють з новою CSS анімацією
+        const firebaseConfig = { databaseURL: "https://vsp-02-default-rtdb.europe-west1.firebasedatabase.app/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const POSITIONS = { "0": {n:"Куратор ВСП", c:"#a855f7"}, "1": {n:"Начальник", c:"#fbbf24"}, "2": {n:"Заст. Нач.", c:"#fbbf24"}, "3": {n:"Нач. НЦ", c:"#fbbf24"}, "4": {n:"Заст. Нач. НЦ", c:"#fbbf24"}, "5": {n:"Ст. інструктор", c:"#94a3b8"}, "6": {n:"Інструктор", c:"#94a3b8"}, "7": {n:"Бієць ВСП", c:"#94a3b8"}, "8": {n:"Курсант ВСП", c:"#64748b"} };
+
         const core = {
-            // ... (Firebase init та інші функції) ...
+            user: null,
+            toast(txt) {
+                const t = document.createElement('div'); t.className = 'toast'; t.innerText = txt;
+                document.getElementById('toast-container').appendChild(t);
+                setTimeout(() => t.remove(), 3000);
+            },
+            login() {
+                const l = document.getElementById('uL').value.trim(), p = document.getElementById('uP').value;
+                if(!l || !p) return this.toast("❌ Заповніть всі поля");
+                db.ref('users/' + l).once('value', (u) => {
+                    db.ref('settings/globalPass').once('value', (gp) => {
+                        const defPass = gp.val() || "5588";
+                        if(u.val() && u.val().p !== p) return this.toast("❌ Невірний пароль");
+                        if(!u.val() && p !== defPass) return this.toast("❌ Невірний код реєстрації");
+                        this.user = u.val() || { l: l, p: p, pos: (l === 'Артем Кацура' || l === 'owner' ? "0" : "8") };
+                        if(!u.val()) db.ref('users/'+l).set(this.user);
+                        localStorage.setItem('vsp_session', JSON.stringify(this.user)); location.reload();
+                    });
+                });
+            },
+            autoLogin() { const s = localStorage.getItem('vsp_session'); if(s) { this.user = JSON.parse(s); this.init(); } },
+            logout() { localStorage.removeItem('vsp_session'); location.reload(); },
+            init() {
+                document.getElementById('authScreen').style.display='none';
+                db.ref('users/' + this.user.l).on('value', (snap) => {
+                    const v = snap.val(); if(!v) return; this.user = v;
+                    let rId = (this.user.l === 'Артем Кацура' || this.user.l === 'owner') ? "0" : String(v.pos || "8");
+                    document.getElementById('uLabel').innerText = `${POSITIONS[rId].n} // ${this.user.l}`;
+                    document.getElementById('admMenu').style.display = (["0", "1", "2", "3", "4"].includes(rId)) ? 'flex' : 'none';
+                    db.ref('data').on('value', () => this.sync());
+                    db.ref('users').on('value', () => this.syncAllUsers());
+                });
+            },
+            nav(id, el) {
+                document.querySelectorAll('.section').forEach(s => s.style.display='none');
+                document.getElementById('s-'+id).style.display='block';
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                el.classList.add('active');
+            },
             openM(id) { document.getElementById(id).classList.add('active'); },
             cls() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
-            // ... (Інша логіка) ...
-        }
+            save(t) {
+                let d = { author: this.user.l, ts: new Date().toLocaleString('uk-UA') };
+                if(t==='patrol') d={...d, a: document.getElementById('p1').value, b: document.getElementById('p2').value };
+                if(t==='cars') d={...d, a: document.getElementById('car1').value, b: document.getElementById('car2').value, c: document.getElementById('car3').value };
+                if(t==='crime') d={...d, a: document.getElementById('cr1').value, b: document.getElementById('cr2').value };
+                if(t==='criminal') d={...d, a: document.getElementById('crm1').value, b: document.getElementById('crm2').value, c: document.getElementById('crm3').value };
+                db.ref('data/' + t).push(d).then(() => { this.toast("✅ Збережено"); this.cls(); });
+            },
+            deleteData(p, k) { if(confirm("Видалити?")) db.ref('data/' + p + '/' + k).remove(); },
+            deleteUser(n) {
+                if(n === 'Артем Кацура' || n === 'owner') return this.toast("⛔ Це Куратор!");
+                if(confirm(`Видалити ${n}?`)) db.ref('users/' + n).remove();
+            },
+            syncAllUsers() {
+                db.ref('users').once('value', (snap) => {
+                    const us = snap.val() || {}; let hA = '', hS = '';
+                    const rId = String(this.user.pos), canDel = ["0", "1", "2", "3", "4"].includes(rId);
+                    Object.values(us).forEach(u => {
+                        const r = String(u.pos || "8"), p = POSITIONS[r], isC = (u.l === 'Артем Кацура' || u.l === 'owner');
+                        hS += `<tr><td><span style="color:${p.c}">${p.n}</span></td><td>${u.l}</td><td>Online</td><td>${(canDel && !isC) ? `<button class="btn-red" onclick="core.deleteUser('${u.l}')">X</button>` : '-'}</td></tr>`;
+                        if(["0", "1", "2"].includes(rId)) {
+                            hA += `<tr><td>${u.l}</td><td>${p.n}</td><td><select onchange="db.ref('users/${u.l}/pos').set(this.value)">${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${r===k?'selected':''}>${v.n}</option>`).join('')}</select></td><td>${!isC ? `<button class="btn-red" onclick="core.deleteUser('${u.l}')">X</button>` : '-'}</td></tr>`;
+                        }
+                    });
+                    document.getElementById('tSol').querySelector('tbody').innerHTML = hS;
+                    document.getElementById('tUsers').querySelector('tbody').innerHTML = hA;
+                    document.getElementById('v2').innerText = Object.keys(us).length;
+                });
+            },
+            sync() {
+                db.ref('data').once('value', (snap) => {
+                    const d = snap.val() || {}, canDel = ["0", "1", "2", "3", "4"].includes(String(this.user.pos));
+                    const render = (id, data, cols) => {
+                        let h = ''; for(let k in data) {
+                            h += `<tr>`; cols.forEach(c => h += `<td>${data[k][c] || ''}</td>`);
+                            h += `<td>${canDel ? `<button class="btn-red" onclick="core.deleteData('${id}', '${k}')">X</button>` : '-'}</td></tr>`;
+                        }
+                        const t = document.getElementById('t' + id.charAt(0).toUpperCase() + id.slice(1));
+                        if(t) t.querySelector('tbody').innerHTML = h;
+                    };
+                    render('cars', d.cars, ['a', 'b', 'c']); render('crime', d.crime, ['ts', 'a', 'b']);
+                    render('patrol', d.patrol, ['ts', 'a', 'b']); render('criminal', d.criminal, ['a', 'b', 'c']);
+                    document.getElementById('v1').innerText = Object.keys(d.cars || {}).length;
+                    document.getElementById('v3').innerText = Object.keys(d.patrol || {}).length;
+                    document.getElementById('v4').innerText = Object.keys(d.crime || {}).length;
+                    document.getElementById('v5').innerText = Object.keys(d.criminal || {}).length;
+                });
+            }
+        };
+        window.onload = () => core.autoLogin();
     </script>
 </body>
 </html>
