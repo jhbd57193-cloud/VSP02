@@ -82,18 +82,18 @@
                 </div>
             </div>
 
-            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table id="tSol"><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><table><thead><tr><th>Марка</th><th>Номер</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><table><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><table><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
-            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні справи</h3><table><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th><th>Дія</th></tr></thead><tbody id="b-sol"></tbody></table></div></div>
+            <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><table><thead><tr><th>Марка</th><th>Номер</th><th>Статус</th><th>Дія</th></tr></thead><tbody id="b-cars"></tbody></table></div></div>
+            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><table><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody id="b-patrol"></tbody></table></div></div>
+            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><table><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody id="b-crime"></tbody></table></div></div>
+            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні справи</h3><table><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody id="b-criminal"></tbody></table></div></div>
             
             <div id="s-adm" class="section" style="display:none;">
                 <div class="card">
                     <h3>Керування доступом та Паролі</h3>
-                    <table id="tUsers">
+                    <table>
                         <thead><tr><th>ПІБ</th><th>Посада</th><th>Пароль (редагувати)</th><th>Дія</th></tr></thead>
-                        <tbody></tbody>
+                        <tbody id="b-adm"></tbody>
                     </table>
                 </div>
             </div>
@@ -110,13 +110,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ОНОВЛЕНИЙ СПИСОК РОЛЕЙ
+        // ПОВНИЙ СПИСОК РОЛЕЙ
         const POSITIONS = { 
             "0": {n:"Куратор ВСП", c:"#a855f7"}, 
             "1": {n:"Начальник", c:"#fbbf24"}, 
             "2": {n:"Заст. Нач.", c:"#fbbf24"},
             "3": {n:"Нач. НЦ", c:"#38bdf8"},
             "4": {n:"Заст. Нач. НЦ", c:"#38bdf8"},
+            "5": {n:"Інструктор", c:"#60a5fa"},
             "7": {n:"Бієць", c:"#10b981"},
             "8": {n:"Курсант ВСП", c:"#64748b"} 
         };
@@ -130,13 +131,14 @@
             },
             login() {
                 const l = document.getElementById('uL').value.trim(), p = document.getElementById('uP').value;
+                if(!l || !p) return this.toast("❌ Поля пусті");
                 db.ref('users/' + l).once('value', (s) => {
                     const u = s.val();
                     if(u && u.p === p) { this.user = u; this.finish(); }
                     else if(!u && p === "5588") {
                         this.user = { l: l, p: p, pos: (l === 'Артем Кацура' ? "0" : "8") };
                         db.ref('users/' + l).set(this.user).then(() => this.finish());
-                    } else this.toast("❌ Помилка входу");
+                    } else this.toast("❌ Помилка входу (Код: 5588)");
                 });
             },
             finish() { localStorage.setItem('vsp_session', JSON.stringify(this.user)); location.reload(); },
@@ -149,9 +151,9 @@
                     const p = POSITIONS[this.user.pos || "8"];
                     document.getElementById('uLabel').innerHTML = `<span style="color:${p.c}">${p.n}</span> // ${this.user.l}`;
                     
-                    const isAdm = ["0", "1", "2", "3", "4"].includes(String(this.user.pos));
-                    document.getElementById('admMenu').style.display = isAdm ? 'flex' : 'none';
-                    document.getElementById('pwdMenu').style.display = isAdm ? 'flex' : 'none';
+                    const canAdm = ["0", "1", "2", "3", "4"].includes(String(this.user.pos));
+                    document.getElementById('admMenu').style.display = canAdm ? 'flex' : 'none';
+                    document.getElementById('pwdMenu').style.display = canAdm ? 'flex' : 'none';
                     this.sync();
                 });
             },
@@ -179,7 +181,7 @@
                             h += `<tr>`; cols.forEach(c => h += `<td>${data[k][c] || ''}</td>`);
                             h += `<td>${can ? `<button class="btn-red" onclick="db.ref('data/${id}/${k}').remove()">X</button>` : '-'}</td></tr>`;
                         }
-                        const b = document.querySelector(`#s-${id} tbody`); if(b) b.innerHTML = h;
+                        const b = document.getElementById(`b-${id}`); if(b) b.innerHTML = h;
                     };
                     render('cars', d.cars, ['a', 'b', 'c']); render('crime', d.crime, ['ts', 'a', 'b']);
                     render('patrol', d.patrol, ['ts', 'a', 'b']); render('criminal', d.criminal, ['a', 'b', 'c']);
@@ -196,23 +198,21 @@
                         hS += `<tr><td><span style="color:${p.c}">${p.n}</span></td><td>${u.l}</td><td>Online</td><td>-</td></tr>`;
                         
                         if(["0","1","2","3","4"].includes(String(this.user.pos))) {
-                            // ЗАХИСТ ТВОГО ПРОФІЛЮ
-                            const isProtected = u.l === 'Артем Кацура';
+                            const isArt = u.l === 'Артем Кацура';
                             const isMe = u.l === this.user.l;
-                            
                             hA += `<tr><td>${u.l}</td><td>
-                                <select ${isProtected && !isMe ? 'disabled' : ''} onchange="db.ref('users/${u.l}/pos').set(this.value)">
+                                <select ${isArt && !isMe ? 'disabled' : ''} onchange="db.ref('users/${u.l}/pos').set(this.value)">
                                     ${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${u.pos===k?'selected':''}>${v.n}</option>`).join('')}
                                 </select>
                             </td><td>
-                                <input type="text" value="${u.p || ''}" ${isProtected && !isMe ? 'disabled' : ''} style="width:100px; padding:5px;" onchange="db.ref('users/${u.l}/p').set(this.value); core.toast('Пароль змінено')">
+                                <input type="text" value="${u.p || ''}" ${isArt && !isMe ? 'disabled' : ''} style="width:100px; padding:5px;" onchange="db.ref('users/${u.l}/p').set(this.value); core.toast('Пароль змінено')">
                             </td><td>
-                                ${isProtected || isMe ? '-' : `<button class="btn-red" onclick="if(confirm('Видалити ${u.l}?')) db.ref('users/${u.l}').remove()">ВИДАЛИТИ</button>`}
+                                ${isArt || isMe ? '-' : `<button class="btn-red" onclick="if(confirm('Видалити ${u.l}?')) db.ref('users/${u.l}').remove()">ВИДАЛИТИ</button>`}
                             </td></tr>`;
                         }
                     });
-                    const sB = document.querySelector('#s-sol tbody'); if(sB) sB.innerHTML = hS;
-                    const aB = document.querySelector('#s-adm tbody'); if(aB) aB.innerHTML = hA;
+                    const sB = document.getElementById('b-sol'); if(sB) sB.innerHTML = hS;
+                    const aB = document.getElementById('b-adm'); if(aB) aB.innerHTML = hA;
                     document.getElementById('v2').innerText = Object.keys(us).length;
                 });
             }
