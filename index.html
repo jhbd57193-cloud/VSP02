@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВСП: ТЕРМІНАЛ v6.7 (Final Security)</title>
+    <title>ВСП: ТЕРМІНАЛ v6.8 (Fixed UI)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -12,79 +12,83 @@
         :root { --gold: #fbbf24; --bg: #020617; --card: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --danger: #f43f5e; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Ubuntu', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: #f1f5f9; background: #020617; }
         
-        /* Виправлені спливаючі вікна: знизу догори */
-        #toast-container { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); z-index: 9999; transition: 1.5s ease-in-out; pointer-events: none; }
-        .toast { background: #1e293b; color: white; padding: 15px 40px; border-radius: 25px; border: 2px solid var(--gold); font-size: 14px; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); text-align: center; min-width: 250px; }
-        #toast-container.active { bottom: 50px; }
+        /* НОВА АНІМАЦІЯ: ЗНИЗУ ДОГОРИ */
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; pointer-events: none; }
+        .toast { 
+            background: #1e293b; color: white; padding: 16px 35px; border-radius: 20px; 
+            border: 2px solid var(--gold); margin-top: 10px; font-weight: 500;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            animation: riseUp 1s ease-out forwards, fadeOut 0.5s ease-in 3.5s forwards;
+        }
+        @keyframes riseUp {
+            0% { transform: translateY(150px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
 
-        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s; backdrop-filter: blur(12px); }
+        .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(10px); }
         .modal.active { opacity: 1; pointer-events: auto; }
-        .modal-box { width: 100%; max-width: 450px; background: #1e293b; border-radius: 30px; padding: 40px; border: 2px solid var(--gold); }
+        .modal-box { width: 100%; max-width: 450px; background: #1e293b; border-radius: 30px; padding: 35px; border: 2px solid var(--gold); }
         .sidebar { width: 260px; background: #0f172a; border-right: 1px solid var(--glass); display: flex; flex-direction: column; }
-        .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 13px; }
+        .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 13px; }
         .nav-item.active { color: var(--gold); background: rgba(251, 191, 36, 0.1); border-left: 4px solid var(--gold); }
-        .main { flex: 1; padding: 30px; overflow-y: auto; background: linear-gradient(135deg, #020617 0%, #0f172a 100%); }
+        .main { flex: 1; padding: 30px; overflow-y: auto; background: #020617; }
         .card { background: var(--card); border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--glass); }
-        .btn { background: var(--gold); color: #000; border: none; padding: 12px 20px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 10px; transition: 0.2s; }
-        .btn-danger { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 9px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 1px solid var(--glass); color: #fff; border-radius: 10px; box-sizing: border-box; }
-        #authScreen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #020617; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 12px; font-size: 10px; color: #64748b; border-bottom: 1px solid var(--glass); }
-        td { padding: 12px; border-bottom: 1px solid var(--glass); font-size: 13px; }
-        .tag { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; border: 1px solid; }
+        .btn { background: var(--gold); color: #000; border: none; padding: 10px 16px; cursor: pointer; font-weight: 700; border-radius: 10px; text-transform: uppercase; font-size: 10px; }
+        .btn-red { background: var(--danger); color: white; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.3); border: 1px solid var(--glass); color: #fff; border-radius: 10px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td, th { padding: 12px; text-align: left; border-bottom: 1px solid var(--glass); font-size: 13px; }
+        .tag { padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; border: 1px solid; }
     </style>
 </head>
 <body>
 
-    <div id="toast-container"><div id="toast-text" class="toast">Повідомлення</div></div>
+    <div id="toast-container"></div>
 
-    <div id="authScreen">
-        <div style="text-align:center; background: #1e293b; padding: 50px; border-radius: 40px; border: 2px solid var(--gold); width: 320px;">
-            <h2 style="color: var(--gold); margin-bottom: 25px;">ВСП: ТЕРМІНАЛ</h2>
+    <div id="authScreen" style="position:fixed; inset:0; z-index:9999; background:#020617; display:flex; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; padding:45px; border-radius:35px; border:2px solid var(--gold); width:300px; text-align:center;">
+            <h2 style="color:var(--gold); margin-bottom:20px;">ВСП: ТЕРМІНАЛ</h2>
             <input id="uL" placeholder="Прізвище">
             <input id="uP" type="password" placeholder="Пароль">
-            <button class="btn" style="width:100%; margin-top: 15px;" onclick="core.login()">Увійти</button>
+            <button class="btn" style="width:100%; margin-top:15px;" onclick="core.login()">Увійти</button>
         </div>
     </div>
 
-    <div style="display: flex; height: 100vh;">
+    <div style="display:flex; height:100vh;">
         <div class="sidebar">
-            <div style="padding: 30px;"><h2 style="color: var(--gold); font-size: 18px; margin:0;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; margin-top:5px; opacity:0.7">...</div></div>
+            <div style="padding:25px;"><h2 style="color:var(--gold); font-size:16px;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; opacity:0.6;">...</div></div>
             <div class="nav-item active" onclick="core.nav('home', this)">🖥 Головна панель</div>
             <div class="nav-item" onclick="core.nav('sol', this)">👥 Особовий склад</div>
             <div class="nav-item" onclick="core.nav('cars', this)">🚗 Реєстр авто</div>
             <div class="nav-item" onclick="core.nav('patrol', this)">🛡 Журнал патрулів</div>
             <div class="nav-item" onclick="core.nav('crime', this)">⚠️ Порушення</div>
             <div class="nav-item" onclick="core.nav('criminal', this)" style="color:#f87171">⚖️ Кримінальні справи</div>
-            <div id="admMenu" class="nav-item" style="display:none; color: var(--gold);" onclick="core.nav('adm', this)">⚙️ Адмін-панель</div>
-            <div class="nav-item" style="margin-top:auto; color: var(--danger);" onclick="core.logout()">🔒 Вихід</div>
+            <div id="admMenu" class="nav-item" style="display:none; color:var(--gold);" onclick="core.nav('adm', this)">⚙️ Адмін-панель</div>
+            <div class="nav-item" style="margin-top:auto; color:var(--danger);" onclick="core.logout()">🔒 Вихід</div>
         </div>
 
         <div class="main">
             <div id="s-home" class="section">
-                <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="margin:0">Панель Управління</h3>
-                    <div id="actionBtns" style="display:flex; gap:10px;">
-                        <button class="btn" onclick="core.openM('m-add-sol')">✚ Бієць</button>
-                        <button class="btn" onclick="core.openM('m-patrol')">✚ Патруль</button>
-                        <button class="btn" onclick="core.openM('m-car')">✚ Авто</button>
-                        <button class="btn" onclick="core.openM('m-crime')">✚ Порушення</button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn" onclick="core.openM('m-add-sol')">✚ БІЄЦЬ</button>
+                        <button class="btn" onclick="core.openM('m-patrol')">✚ ПАТРУЛЬ</button>
+                        <button class="btn" onclick="core.openM('m-car')">✚ АВТО</button>
+                        <button class="btn" onclick="core.openM('m-crime')">✚ ПОРУШЕННЯ</button>
+                        <button class="btn btn-red" onclick="core.openM('m-criminal')">✚ КП</button>
                     </div>
                 </div>
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;">
                     <div class="card">АВТО <b id="v1" style="display:block; font-size:28px; color:var(--accent)">0</b></div>
                     <div class="card">БІЙЦІ <b id="v2" style="display:block; font-size:28px; color:var(--gold)">0</b></div>
                     <div class="card">ПАТРУЛІ <b id="v3" style="display:block; font-size:28px; color:#a855f7">0</b></div>
+                    <div class="card">ПОРУШЕННЯ <b id="v4" style="display:block; font-size:28px; color:#facc15">0</b></div>
+                    <div class="card">КРИМІНАЛЬНІ КП <b id="v5" style="display:block; font-size:28px; color:var(--danger)">0</b></div>
                 </div>
-            </div>
-
-            <div id="s-adm" class="section" style="display:none;">
-                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="margin:0">Налаштування доступу</h3>
-                    <button id="globalPassBtn" class="btn" style="background:var(--accent); display:none;" onclick="core.openM('m-change-pass')">⚙️ Пароль сайту</button>
-                </div>
-                <div class="card"><table id="tUsers"><thead><tr><th>ПІБ</th><th>Посада</th><th>Змінити ранг</th><th>Видалити</th></tr></thead><tbody></tbody></table></div>
             </div>
 
             <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table id="tSol"><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
@@ -92,11 +96,24 @@
             <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><table id="tPatrol"><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
             <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><table id="tCrime"><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
             <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні справи</h3><table id="tCriminal"><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody></tbody></table></div></div>
+            
+            <div id="s-adm" class="section" style="display:none;">
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Налаштування доступу</h3>
+                    <button id="globalPassBtn" class="btn" style="background:var(--accent); display:none;" onclick="core.openM('m-change-pass')">ЗМІНИТИ КОД ВХОДУ</button>
+                </div>
+                <div class="card"><table id="tUsers"><thead><tr><th>ПІБ</th><th>Посада</th><th>Доступ</th><th>Дія</th></tr></thead><tbody></tbody></table></div>
+            </div>
         </div>
     </div>
 
-    <div id="m-add-sol" class="modal"><div class="modal-box"><h3>Новий боєць</h3><input id="as1" placeholder="Прізвище"><select id="as3"><option value="8">Курсант</option><option value="7">Бієць</option><option value="6">Інструктор</option><option value="5">Ст. інструктор</option><option value="4">Заст. Нач. НЦ</option><option value="3">Нач. НЦ</option><option value="2">Заст. Нач.</option><option value="1">Начальник</option></select><button class="btn" style="width:100%" onclick="core.addSoldier()">Занести в реєстр</button><button class="btn" style="background:transparent; color:#94a3b8; width:100%; margin-top:10px;" onclick="core.cls()">Скасувати</button></div></div>
-    <div id="m-change-pass" class="modal"><div class="modal-box"><h3>Пароль реєстрації</h3><input id="newGlobalPass" placeholder="Новий код"><button class="btn" style="width:100%" onclick="core.updateGlobalPass()">Оновити</button><button class="btn" style="background:transparent; color:#94a3b8; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-add-sol" class="modal"><div class="modal-box"><h3>Новий боєць</h3><input id="as1" placeholder="Прізвище"><select id="as3"><option value="8">Курсант</option><option value="7">Бієць</option><option value="6">Інструктор</option><option value="5">Ст. інструктор</option><option value="4">Заст. Нач. НЦ</option><option value="3">Нач. НЦ</option><option value="2">Заст. Нач.</option><option value="1">Начальник</option></select><button class="btn" style="width:100%" onclick="core.addSoldier()">Додати</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патруля</h3><input id="p1" placeholder="Склад"><textarea id="p2" placeholder="Опис"></textarea><button class="btn" style="width:100%" onclick="core.save('patrol')">Зберегти</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-car" class="modal"><div class="modal-box"><h3>Додати авто</h3><input id="car1" placeholder="Марка"><input id="car2" placeholder="Держ. номер"><select id="car3"><option>В строю</option><option>В ремонті</option></select><button class="btn" style="width:100%" onclick="core.save('cars')">Зберегти</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-crime" class="modal"><div class="modal-box"><h3>Внести порушення</h3><input id="cr1" placeholder="Хто порушив"><textarea id="cr2" placeholder="Суть"></textarea><button class="btn" style="width:100%" onclick="core.save('crime')">Записати</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-criminal" class="modal"><div class="modal-box"><h3>Нове КП</h3><input id="crm1" placeholder="№ Справи"><input id="crm2" placeholder="Стаття"><input id="crm3" placeholder="Фігурант"><button class="btn btn-red" style="width:100%" onclick="core.save('criminal')">Створити справу</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-change-pass" class="modal"><div class="modal-box"><h3>Новий код реєстрації</h3><input id="newGlobalPass" placeholder="Введіть новий пароль"><button class="btn" style="width:100%" onclick="core.updateGlobalPass()">Зберегти</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+
     <script>
         const firebaseConfig = { databaseURL: "https://vsp-02-default-rtdb.europe-west1.firebasedatabase.app/" };
         firebase.initializeApp(firebaseConfig);
@@ -107,10 +124,9 @@
         const core = {
             user: null,
             toast(txt) {
-                const container = document.getElementById('toast-container');
-                document.getElementById('toast-text').innerText = txt;
-                container.classList.add('active');
-                setTimeout(() => container.classList.remove('active'), 3500);
+                const t = document.createElement('div'); t.className = 'toast'; t.innerText = txt;
+                document.getElementById('toast-container').appendChild(t);
+                setTimeout(() => t.remove(), 4000);
             },
             autoLogin() { const s = localStorage.getItem('vsp_session'); if(s) { this.user = JSON.parse(s); this.init(); } },
             login() {
@@ -118,8 +134,8 @@
                 db.ref('users/' + l).once('value', (u) => {
                     db.ref('settings/globalPass').once('value', (gPass) => {
                         const defPass = gPass.val() || "5588";
-                        if(u.val() && u.val().p !== p) return this.toast("❌ Невірний пароль!");
-                        if(!u.val() && p !== defPass) return this.toast("❌ Невірний код реєстрації!");
+                        if(u.val() && u.val().p !== p) return this.toast("❌ Пароль невірний");
+                        if(!u.val() && p !== defPass) return this.toast("❌ Невірний код реєстрації");
                         this.user = u.val() || { l: l, p: p, pos: (l === 'Артем Кацура' || l === 'owner' ? "0" : "8") };
                         if(!u.val()) db.ref('users/'+l).set(this.user);
                         localStorage.setItem('vsp_session', JSON.stringify(this.user)); location.reload();
@@ -148,60 +164,65 @@
             openM(id) { document.getElementById(id).classList.add('active'); },
             cls() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
             addSoldier() {
-                const name = document.getElementById('as1').value.trim(), pos = document.getElementById('as3').value;
-                if(!name) return this.toast("❌ Вкажіть прізвище");
+                const n = document.getElementById('as1').value.trim(), pos = document.getElementById('as3').value;
+                if(!n) return this.toast("❌ Вкажіть прізвище");
                 db.ref('settings/globalPass').once('value', (gp) => {
-                    db.ref('users/' + name).set({ l: name, p: gp.val() || "5588", pos: pos }).then(() => { 
-                        this.toast("✅ Бійця додано в базу"); this.cls(); 
+                    db.ref('users/' + n).set({ l: n, p: gp.val() || "5588", pos: pos }).then(() => { 
+                        this.toast("✅ Бійця додано"); this.cls(); 
                     });
                 });
             },
+            updateGlobalPass() {
+                const p = document.getElementById('newGlobalPass').value;
+                if(!p) return; db.ref('settings/globalPass').set(p).then(() => { this.toast("✅ Код реєстрації змінено"); this.cls(); });
+            },
+            save(t) {
+                let d = { author: this.user.l, ts: new Date().toLocaleString('uk-UA') };
+                if(t==='patrol') d={...d, a: document.getElementById('p1').value, b: document.getElementById('p2').value };
+                if(t==='cars') d={...d, a: document.getElementById('car1').value, b: document.getElementById('car2').value, c: document.getElementById('car3').value };
+                if(t==='crime') d={...d, a: document.getElementById('cr1').value, b: document.getElementById('cr2').value };
+                if(t==='criminal') d={...d, a: document.getElementById('crm1').value, b: document.getElementById('crm2').value, c: document.getElementById('crm3').value };
+                db.ref('data/' + t).push(d).then(() => { this.toast("✅ Запис збережено"); this.cls(); });
+            },
+            deleteData(p, k) { if(confirm("Видалити запис?")) db.ref('data/' + p + '/' + k).remove().then(() => this.toast("🗑 Видалено")); },
             deleteUser(n) {
-                if(n === 'Артем Кацура' || n === 'owner') return this.toast("⛔ Помилка: Неможливо видалити куратора!");
-                if(confirm(`Видалити бійця ${n} з бази?`)) {
-                    db.ref('users/' + n).remove().then(() => this.toast("🗑 Користувача видалено"));
-                }
+                if(n === 'Артем Кацура' || n === 'owner') return this.toast("⛔ Помилка: Це Куратор!");
+                if(confirm(`Видалити ${n}?`)) db.ref('users/' + n).remove().then(() => this.toast("🗑 Користувача видалено"));
             },
             syncAllUsers() {
                 db.ref('users').once('value', (snap) => {
                     const us = snap.val() || {}; let hA = '', hS = '';
-                    const myPos = String(this.user.pos);
-                    const canDelete = ["0", "1", "2", "3", "4"].includes(myPos);
-
+                    const rId = String(this.user.pos);
+                    const canDel = ["0", "1", "2", "3", "4"].includes(rId);
                     Object.values(us).forEach(u => {
-                        const r = String(u.pos || "8"), p = POSITIONS[r], isCurator = (u.l === 'Артем Кацура' || u.l === 'owner');
-                        
-                        // Таблиця Особовий склад
-                        hS += `<tr>
-                            <td><span class="tag" style="color:${p.c}; border-color:${p.c}">${p.n}</span></td>
-                            <td>${u.l}</td>
-                            <td><span style="color:#22c55e">● Online</span></td>
-                            <td>${(canDelete && !isCurator) ? `<button class="btn-danger" onclick="core.deleteUser('${u.l}')">ВИДАЛИТИ</button>` : '-'}</td>
-                        </tr>`;
-
-                        // Таблиця Адмін-панель
-                        if(["0", "1", "2"].includes(myPos)) {
-                            hA += `<tr>
-                                <td><b>${u.l}</b></td>
-                                <td>${p.n}</td>
-                                <td><select ${isCurator ? 'disabled' : ''} onchange="db.ref('users/${u.l}/pos').set(this.value); core.toast('✅ Ранг оновлено')">
-                                    ${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${r===k?'selected':''}>${v.n}</option>`).join('')}
-                                </select></td>
-                                <td>${(!isCurator) ? `<button class="btn-danger" onclick="core.deleteUser('${u.l}')">X</button>` : '-'}</td>
-                            </tr>`;
+                        const r = String(u.pos || "8"), p = POSITIONS[r], isC = (u.l === 'Артем Кацура' || u.l === 'owner');
+                        hS += `<tr><td><span class="tag" style="color:${p.c}; border-color:${p.c}">${p.n}</span></td><td>${u.l}</td><td><span style="color:#22c55e">● Online</span></td><td>${(canDel && !isC) ? `<button class="btn" style="background:var(--danger); color:white; padding:4px 8px;" onclick="core.deleteUser('${u.l}')">ВИДАЛИТИ</button>` : '-'}</td></tr>`;
+                        if(["0", "1", "2"].includes(rId)) {
+                            hA += `<tr><td><b>${u.l}</b></td><td>${p.n}</td><td><select ${isC?'disabled':''} onchange="db.ref('users/${u.l}/pos').set(this.value); core.toast('✅ Роль змінено')">${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${r===k?'selected':''}>${v.n}</option>`).join('')}</select></td><td>${!isC ? `<button class="btn" style="background:var(--danger); color:white; padding:4px 8px;" onclick="core.deleteUser('${u.l}')">X</button>` : '-'}</td></tr>`;
                         }
                     });
                     document.getElementById('tSol').querySelector('tbody').innerHTML = hS;
-                    if(document.getElementById('tUsers')) document.getElementById('tUsers').querySelector('tbody').innerHTML = hA;
+                    document.getElementById('tUsers').querySelector('tbody').innerHTML = hA;
                     document.getElementById('v2').innerText = Object.keys(us).length;
                 });
             },
             sync() {
                 db.ref('data').once('value', (snap) => {
-                    const d = snap.val() || {};
+                    const d = snap.val() || {}, canDel = ["0", "1", "2", "3", "4"].includes(String(this.user.pos));
+                    const render = (id, data, cols) => {
+                        let h = ''; for(let k in data) {
+                            h += `<tr>`; cols.forEach(c => h += `<td>${data[k][c] || ''}</td>`);
+                            h += `<td>${canDel ? `<button class="btn" style="background:var(--danger); color:white; padding:4px 8px;" onclick="core.deleteData('${id}', '${k}')">X</button>` : '-'}</td></tr>`;
+                        }
+                        const t = document.getElementById('t' + id.charAt(0).toUpperCase() + id.slice(1));
+                        if(t) t.querySelector('tbody').innerHTML = h;
+                    };
+                    render('cars', d.cars, ['a', 'b', 'c']); render('crime', d.crime, ['ts', 'a', 'b']);
+                    render('patrol', d.patrol, ['ts', 'a', 'b']); render('criminal', d.criminal, ['a', 'b', 'c']);
                     document.getElementById('v1').innerText = Object.keys(d.cars || {}).length;
                     document.getElementById('v3').innerText = Object.keys(d.patrol || {}).length;
-                    // Тут можна додати рендер інших таблиць за аналогією
+                    document.getElementById('v4').innerText = Object.keys(d.crime || {}).length;
+                    document.getElementById('v5').innerText = Object.keys(d.criminal || {}).length;
                 });
             }
         };
