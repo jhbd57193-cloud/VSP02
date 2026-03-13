@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВСП: ТЕРМІНАЛ v6.5 (Notifications)</title>
+    <title>ВСП: ТЕРМІНАЛ v6.6 (Protected Admin)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -12,10 +12,10 @@
         :root { --gold: #fbbf24; --bg: #020617; --card: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --danger: #f43f5e; --glass: rgba(255, 255, 255, 0.05); --curator: #a855f7; }
         body { font-family: 'Ubuntu', sans-serif; margin: 0; height: 100vh; overflow: hidden; color: #f1f5f9; background: #020617; }
         
-        /* Спливаючі сповіщення */
-        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
-        .toast { background: #1e293b; color: white; padding: 12px 24px; border-radius: 12px; border-left: 4px solid var(--gold); margin-top: 10px; box-shadow: 0 10px 15px rgba(0,0,0,0.3); transform: translateX(120%); transition: 0.3s; font-size: 13px; }
-        .toast.active { transform: translateX(0); }
+        /* Повільні спливаючі сповіщення знизу догори */
+        #toast-container { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column-reverse; align-items: center; pointer-events: none; }
+        .toast { background: #1e293b; color: white; padding: 15px 30px; border-radius: 20px; border: 1px solid var(--gold); margin-bottom: 20px; opacity: 0; transform: translateY(50px); transition: all 1s ease-out; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .toast.active { opacity: 1; transform: translateY(-20px); }
 
         .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(10px); }
         .modal.active { opacity: 1; pointer-events: auto; }
@@ -27,7 +27,7 @@
         .card { background: var(--card); border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--glass); }
         .btn { background: var(--gold); color: #000; border: none; padding: 10px 18px; cursor: pointer; font-weight: 700; border-radius: 12px; text-transform: uppercase; font-size: 10px; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-back { background: transparent; color: #94a3b8; border: 1px solid var(--glass); margin-top: 10px; width: 100%; }
-        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.4); border: 1px solid var(--glass); color: #fff; border-radius: 10px; box-sizing: border-box; outline: none; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 8px 0; background: rgba(0,0,0,0.4); border: 1px solid var(--glass); color: #fff; border-radius: 10px; box-sizing: border-box; }
         #authScreen { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: #020617; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; font-size: 10px; color: #64748b; border-bottom: 1px solid var(--glass); }
@@ -40,11 +40,10 @@
 
     <div id="authScreen">
         <div style="text-align:center; background: #1e293b; padding: 50px; border-radius: 30px; border: 2px solid var(--gold); width: 340px;">
-            <h2 style="color: var(--gold); margin-bottom: 5px;">ВСП: ТЕРМІНАЛ</h2>
-            <p style="font-size: 11px; color: #94a3b8; margin-bottom: 20px;">Авторизація або реєстрація</p>
+            <h2 style="color: var(--gold); margin-bottom: 20px;">ВСП: ТЕРМІНАЛ</h2>
             <input id="uL" placeholder="Прізвище">
             <input id="uP" type="password" placeholder="Пароль">
-            <button class="btn" style="width:100%; margin-top: 10px;" onclick="core.login()">Увійти / Створити</button>
+            <button class="btn" style="width:100%; margin-top: 10px;" onclick="core.login()">Увійти</button>
         </div>
     </div>
 
@@ -84,10 +83,10 @@
 
             <div id="s-adm" class="section" style="display:none;">
                 <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="margin:0">Управління доступом</h3>
-                    <button class="btn" style="background:var(--accent); color:#000;" onclick="core.openM('m-change-pass')">⚙️ Пароль сайту</button>
+                    <h3 style="margin:0">Управління персоналом</h3>
+                    <button id="globalPassBtn" class="btn" style="background:var(--accent); color:#000; display:none;" onclick="core.openM('m-change-pass')">⚙️ Пароль сайту</button>
                 </div>
-                <div class="card"><table id="tUsers"><thead><tr><th>ПІБ</th><th>Роль</th><th>Управління</th><th>Дія</th></tr></thead><tbody></tbody></table></div>
+                <div class="card"><table id="tUsers"><thead><tr><th>ПІБ</th><th>Роль</th><th>Доступ</th><th>Дія</th></tr></thead><tbody></tbody></table></div>
             </div>
 
             <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><table id="tSol"><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th></tr></thead><tbody></tbody></table></div></div>
@@ -98,8 +97,8 @@
         </div>
     </div>
 
-    <div id="m-add-sol" class="modal"><div class="modal-box"><h3>Реєстрація бійця</h3><input id="as1" placeholder="ПІБ"><input id="as2" type="password" placeholder="Пароль"><select id="as3"><option value="8">Курсант</option><option value="7">Бієць</option><option value="6">Інструктор</option><option value="5">Ст. інструктор</option><option value="4">Заст. Нач. НЦ</option><option value="3">Нач. НЦ</option><option value="2">Заст. Нач.</option><option value="1">Начальник</option></select><button class="btn" style="width:100%" onclick="core.addSoldier()">Зареєструвати</button><button class="btn btn-back" onclick="core.cls()">Назад</button></div></div>
-    <div id="m-change-pass" class="modal"><div class="modal-box"><h3>Зміна пароля сайту</h3><input id="newGlobalPass" placeholder="Новий пароль"><button class="btn" style="width:100%" onclick="core.updateGlobalPass()">Оновити</button><button class="btn btn-back" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-add-sol" class="modal"><div class="modal-box"><h3>Реєстрація бійця</h3><input id="as1" placeholder="Прізвище Бійця"><select id="as3"><option value="8">Курсант</option><option value="7">Бієць</option><option value="6">Інструктор</option><option value="5">Ст. інструктор</option><option value="4">Заст. Нач. НЦ</option><option value="3">Нач. НЦ</option><option value="2">Заст. Нач.</option><option value="1">Начальник</option></select><button class="btn" style="width:100%" onclick="core.addSoldier()">Додати в базу</button><button class="btn btn-back" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-change-pass" class="modal"><div class="modal-box"><h3>Новий пароль реєстрації</h3><input id="newGlobalPass" placeholder="Введіть новий код"><button class="btn" style="width:100%" onclick="core.updateGlobalPass()">Змінити</button><button class="btn btn-back" onclick="core.cls()">Назад</button></div></div>
     <div id="m-patrol" class="modal"><div class="modal-box"><h3>Новий патруль</h3><input id="p1" placeholder="Склад"><textarea id="p2" placeholder="Звіт"></textarea><button class="btn" style="width:100%" onclick="core.save('patrol')">Зберегти</button><button class="btn btn-back" onclick="core.cls()">Назад</button></div></div>
     <div id="m-car" class="modal"><div class="modal-box"><h3>Додати авто</h3><input id="car1" placeholder="Марка"><input id="car2" placeholder="Номер"><select id="car3"><option>В строю</option><option>В ремонті</option></select><button class="btn" style="width:100%" onclick="core.save('cars')">Зберегти</button><button class="btn btn-back" onclick="core.cls()">Назад</button></div></div>
     <div id="m-crime" class="modal"><div class="modal-box"><h3>Порушення</h3><input id="cr1" placeholder="ПІБ"><textarea id="cr2" placeholder="Суть"></textarea><button class="btn" style="width:100%" onclick="core.save('crime')">Внести</button><button class="btn btn-back" onclick="core.cls()">Назад</button></div></div>
@@ -118,22 +117,20 @@
                 const t = document.createElement('div'); t.className = 'toast'; t.innerText = txt;
                 document.getElementById('toast-container').appendChild(t);
                 setTimeout(() => t.classList.add('active'), 100);
-                setTimeout(() => { t.classList.remove('active'); setTimeout(() => t.remove(), 300); }, 3000);
+                setTimeout(() => { t.classList.remove('active'); setTimeout(() => t.remove(), 1100); }, 4000);
             },
             autoLogin() { const s = localStorage.getItem('vsp_session'); if(s) { this.user = JSON.parse(s); this.init(); } },
             login() {
                 const l = document.getElementById('uL').value.trim(), p = document.getElementById('uP').value;
-                if(!l || !p) return this.toast("❌ Заповніть всі поля");
                 db.ref('users/' + l).once('value', (u) => {
                     db.ref('settings/globalPass').once('value', (gPass) => {
                         const defPass = gPass.val() || "5588";
-                        const isB = (l === 'Артем Кацура' || l === 'owner');
                         if(u.val()) {
-                            if(u.val().p !== p) return this.toast("❌ Невірний пароль");
+                            if(u.val().p !== p) return this.toast("❌ Помилка: Невірний пароль");
                             this.user = u.val();
                         } else {
-                            if(p !== defPass) return this.toast("❌ Невірний пароль реєстрації");
-                            this.user = { l: l, p: p, pos: (isB ? "0" : "8") };
+                            if(p !== defPass) return this.toast("❌ Помилка: Невірний код реєстрації");
+                            this.user = { l: l, p: p, pos: (l === 'Артем Кацура' || l === 'owner' ? "0" : "8") };
                             db.ref('users/'+l).set(this.user);
                         }
                         localStorage.setItem('vsp_session', JSON.stringify(this.user));
@@ -148,7 +145,8 @@
                     const v = snap.val(); if(!v) return; this.user = v;
                     let rId = (this.user.l === 'Артем Кацура' || this.user.l === 'owner') ? "0" : String(v.pos || "8");
                     document.getElementById('uLabel').innerText = `${POSITIONS[rId].n} // ${this.user.l}`;
-                    document.getElementById('admMenu').style.display = (rId === "0") ? 'flex' : 'none';
+                    document.getElementById('admMenu').style.display = (["0", "1", "2"].includes(rId)) ? 'flex' : 'none';
+                    document.getElementById('globalPassBtn').style.display = (rId === "0") ? 'block' : 'none';
                     db.ref('data').on('value', () => this.sync());
                     db.ref('users').on('value', () => this.syncAllUsers());
                 });
@@ -162,13 +160,17 @@
             openM(id) { document.getElementById(id).classList.add('active'); },
             cls() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
             addSoldier() {
-                const name = document.getElementById('as1').value.trim(), pass = document.getElementById('as2').value, pos = document.getElementById('as3').value;
-                if(!name || !pass) return this.toast("❌ Заповніть поля");
-                db.ref('users/' + name).set({ l: name, p: pass, pos: pos }).then(() => { this.toast("✅ Бійця зареєстровано"); this.cls(); });
+                const name = document.getElementById('as1').value.trim(), pos = document.getElementById('as3').value;
+                if(!name) return this.toast("❌ Введіть прізвище");
+                db.ref('settings/globalPass').once('value', (gp) => {
+                    db.ref('users/' + name).set({ l: name, p: gp.val() || "5588", pos: pos }).then(() => { 
+                        this.toast("✅ Боєць успішно доданий в базу"); this.cls(); 
+                    });
+                });
             },
             updateGlobalPass() {
                 const p = document.getElementById('newGlobalPass').value;
-                if(!p) return; db.ref('settings/globalPass').set(p).then(() => { this.toast("✅ Пароль сайту оновлено"); this.cls(); });
+                if(!p) return; db.ref('settings/globalPass').set(p).then(() => { this.toast("✅ Глобальний код входу змінено"); this.cls(); });
             },
             save(t) {
                 let d = { author: this.user.l, ts: new Date().toLocaleString('uk-UA'), rawTs: Date.now() };
@@ -176,23 +178,24 @@
                 if(t==='cars') d={...d, a: document.getElementById('car1').value, b: document.getElementById('car2').value, c: document.getElementById('car3').value };
                 if(t==='crime') d={...d, a: document.getElementById('cr1').value, b: document.getElementById('cr2').value };
                 if(t==='criminal') d={...d, a: document.getElementById('crm1').value, b: document.getElementById('crm2').value, c: document.getElementById('crm3').value };
-                db.ref('data/' + t).push(d).then(() => { this.toast("✅ Збережено"); this.cls(); });
+                db.ref('data/' + t).push(d).then(() => { this.toast("✅ Дані успішно збережено"); this.cls(); });
             },
-            deleteData(p, k) { if(confirm("Видалити?")) db.ref('data/' + p + '/' + k).remove().then(() => this.toast("🗑 Видалено")); },
-            deleteUser(n) { if(confirm(`Видалити ${n}?`)) db.ref('users/' + n).remove().then(() => this.toast("🗑 Користувача видалено")); },
+            deleteData(p, k) { if(confirm("Видалити запис?")) db.ref('data/' + p + '/' + k).remove().then(() => this.toast("🗑 Запис видалено з архіву")); },
+            deleteUser(n) { if(confirm(`Видалити доступ для ${n}?`)) db.ref('users/' + n).remove().then(() => this.toast("🗑 Користувача видалено")); },
             syncAllUsers() {
                 db.ref('users').once('value', (snap) => {
-                    const us = snap.val() || {}; let arr = Object.values(us), hA = '', hS = '';
-                    arr.forEach(u => {
-                        const r = String(u.pos || "8"), p = POSITIONS[r], isC = (u.l === 'Артем Кацура' || u.l === 'owner');
-                        hS += `<tr><td><span class="tag ${p.c}" style="border:1px solid; padding:2px 5px; border-radius:4px; font-size:10px;">${p.n}</span></td><td>${u.l}</td><td><span style="color:#22c55e">● Online</span></td></tr>`;
-                        if(this.user.pos == "0") {
-                            hA += `<tr><td><b>${u.l}</b></td><td>${p.n}</td><td><select onchange="db.ref('users/${u.l}/pos').set(this.value); core.toast('✅ Роль змінена')">${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${r===k?'selected':''}>${v.n}</option>`).join('')}</select></td><td>${!isC ? `<button style="background:var(--danger); border:none; color:white; padding:4px 8px; border-radius:5px; cursor:pointer;" onclick="core.deleteUser('${u.l}')">X</button>` : '-'}</td></tr>`;
+                    const us = snap.val() || {}; let hA = '', hS = '';
+                    Object.values(us).forEach(u => {
+                        const r = String(u.pos || "8"), p = POSITIONS[r], isCurator = (u.l === 'Артем Кацура' || u.l === 'owner');
+                        hS += `<tr><td>${p.n}</td><td>${u.l}</td><td><span style="color:#22c55e">● Online</span></td></tr>`;
+                        if(["0", "1", "2"].includes(String(this.user.pos))) {
+                            let canEdit = !isCurator; // Начальник і Зам не можуть правити Куратора
+                            hA += `<tr><td><b>${u.l}</b></td><td>${p.n}</td><td><select ${!canEdit ? 'disabled' : ''} onchange="db.ref('users/${u.l}/pos').set(this.value); core.toast('✅ Ранг змінено')">${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${r===k?'selected':''}>${v.n}</option>`).join('')}</select></td><td>${(canEdit) ? `<button style="background:var(--danger); border:none; color:white; padding:4px 8px; border-radius:5px; cursor:pointer;" onclick="core.deleteUser('${u.l}')">ВИДАЛИТИ</button>` : '-'}</td></tr>`;
                         }
                     });
                     document.getElementById('tUsers').querySelector('tbody').innerHTML = hA;
                     document.getElementById('tSol').querySelector('tbody').innerHTML = hS;
-                    document.getElementById('v2').innerText = arr.length;
+                    document.getElementById('v2').innerText = Object.keys(us).length;
                 });
             },
             sync() {
