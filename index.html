@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВСП: ТЕРМІНАЛ v7.7 (Control & Kick)</title>
+    <title>ВСП: ТЕРМІНАЛ v7.8 (Cloud & Auto-Clean)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -16,12 +16,9 @@
         @media (max-width: 850px) { .app-container { flex-direction: column; height: auto; } }
 
         .sidebar { width: 260px; background: #0f172a; border-right: 1px solid var(--glass); display: flex; flex-direction: column; flex-shrink: 0; }
-        @media (max-width: 850px) { 
-            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--glass); }
-            .nav-list { display: flex; overflow-x: auto; white-space: nowrap; }
-        }
+        @media (max-width: 850px) { .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--glass); } .nav-list { display: flex; overflow-x: auto; } }
 
-        .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 13px; }
+        .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 13px; white-space: nowrap; }
         .nav-item.active { color: var(--gold); background: rgba(251, 191, 36, 0.1); border-left: 4px solid var(--gold); }
         @media (max-width: 850px) { .nav-item { border-left: none !important; border-bottom: 2px solid transparent; } .nav-item.active { border-bottom: 2px solid var(--gold); } }
 
@@ -29,7 +26,7 @@
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--glass); }
         
         .table-wrapper { overflow-x: auto; width: 100%; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        table { width: 100%; border-collapse: collapse; min-width: 550px; }
         td, th { padding: 12px; text-align: left; border-bottom: 1px solid var(--glass); font-size: 13px; }
 
         .btn { background: var(--gold); color: #000; border: none; padding: 10px 15px; cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 10px; }
@@ -47,22 +44,25 @@
     <div id="toast-container" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999;"></div>
 
     <div id="authScreen" style="position:fixed; inset:0; z-index:9999; background:#020617; display:flex; align-items:center; justify-content:center;">
-        <div style="background:#1e293b; padding:40px; border-radius:35px; border:2px solid var(--gold); width:280px; text-align:center;">
-            <h2 style="color:var(--gold); margin-bottom:20px;">ВСП: ТЕРМІНАЛ</h2>
+        <div style="background:#1e293b; padding:40px; border-radius:35px; border:2px solid var(--gold); width:300px; text-align:center;">
+            <h2 style="color:var(--gold); margin-bottom:10px;">ВСП: ТЕРМІНАЛ</h2>
+            <p style="font-size:10px; opacity:0.5; margin-bottom:20px;">Вхід через Email (ПК / Телефон)</p>
+            <input id="uE" type="email" placeholder="Електронна пошта">
             <input id="uL" placeholder="Прізвище">
             <input id="uP" type="password" placeholder="Пароль">
-            <button id="authBtn" class="btn" style="width:100%; margin-top:10px;">УВІЙТИ</button>
+            <button id="authBtn" class="btn" style="width:100%; margin-top:10px;">УВІЙТИ / РЕЄСТРАЦІЯ</button>
         </div>
     </div>
 
     <div class="app-container">
         <div class="sidebar">
-            <div style="padding:20px;"><h2 style="color:var(--gold); font-size:16px;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; opacity:0.6;">Завантаження...</div></div>
+            <div style="padding:20px;"><h2 style="color:var(--gold); font-size:16px;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; opacity:0.6;">...</div></div>
             <div class="nav-list">
                 <div class="nav-item active" onclick="core.nav('home', this)">🖥 Головна</div>
                 <div class="nav-item" onclick="core.nav('sol', this)">👥 Склад</div>
                 <div class="nav-item" onclick="core.nav('cars', this)">🚗 Авто</div>
                 <div class="nav-item" onclick="core.nav('patrol', this)">🛡 Патрулі</div>
+                <div class="nav-item" onclick="core.nav('crime', this)">⚠️ Порушення</div>
                 <div id="admMenu" class="nav-item" style="display:none; color:var(--gold);" onclick="core.nav('adm', this)">⚙️ АДМІН</div>
             </div>
             <div class="nav-item" style="margin-top:auto; color:var(--danger);" onclick="core.logout()">🔒 Вихід</div>
@@ -70,26 +70,31 @@
 
         <div class="main">
             <div id="s-home" class="section">
-                <div class="card">
-                    <h3 style="margin-top:0">Статистика терміналу</h3>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px;">
-                        <div class="card" style="margin:0; text-align:center;">БІЙЦІ <b id="v2" style="display:block; font-size:24px; color:var(--gold)">0</b></div>
-                        <div class="card" style="margin:0; text-align:center;">АВТО <b id="v1" style="display:block; font-size:24px; color:var(--accent)">0</b></div>
+                <div class="card" style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px;">
+                    <h3 style="margin:0">Панель Управління</h3>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn" onclick="core.openM('m-patrol')">✚ ПАТРУЛЬ</button>
+                        <button class="btn" onclick="core.openM('m-crime')">✚ ПОРУШЕННЯ</button>
                     </div>
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:15px;">
+                    <div class="card" style="text-align:center;">БІЙЦІ <b id="v2" style="display:block; font-size:24px; color:var(--gold)">0</b></div>
+                    <div class="card" style="text-align:center;">АВТО <b id="v1" style="display:block; font-size:24px; color:var(--accent)">0</b></div>
+                    <div class="card" style="text-align:center;">ПАТРУЛІ <b id="v3" style="display:block; font-size:24px; color:#a855f7">0</b></div>
                 </div>
             </div>
 
-            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад (Ієрархія)</h3><div class="table-wrapper"><table><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th></tr></thead><tbody id="b-sol"></tbody></table></div></div></div>
+            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><div class="table-wrapper"><table><thead><tr><th>Посада</th><th>ПІБ</th><th>Email</th></tr></thead><tbody id="b-sol"></tbody></table></div></div></div>
             <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><div class="table-wrapper"><table><thead><tr><th>Марка</th><th>Номер</th><th>Стан</th><th>Дія</th></tr></thead><tbody id="b-cars"></tbody></table></div></div></div>
-            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><div class="table-wrapper"><table><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody id="b-patrol"></tbody></table></div></div></div>
-            
-            <div id="s-adm" class="section" style="display:none;">
-                <div class="card"><h3>⚙️ Управління доступом</h3><div class="table-wrapper"><table><thead><tr><th>ПІБ</th><th>Посада</th><th>Дії</th></tr></thead><tbody id="b-adm"></tbody></table></div></div>
-            </div>
+            <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів (Архів 7 днів)</h3><div class="table-wrapper"><table><thead><tr><th>Дата/Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody id="b-patrol"></tbody></table></div></div></div>
+            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Журнал порушень</h3><div class="table-wrapper"><table><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody id="b-crime"></tbody></table></div></div></div>
+            <div id="s-adm" class="section" style="display:none;"><div class="card"><h3>⚙️ Адмін-панель</h3><div class="table-wrapper"><table><thead><tr><th>ПІБ</th><th>Посада</th><th>Дії</th></tr></thead><tbody id="b-adm"></tbody></table></div></div></div>
         </div>
     </div>
 
-    <div id="m-pwd" class="modal"><div class="modal-box"><h3>Новий пароль</h3><p id="pwdTarget" style="color:var(--gold)"></p><input id="newP" placeholder="Введіть код"><button class="btn" style="width:100%" onclick="core.saveNewPwd()">Змінити</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Звіт патруля</h3><input id="p1" placeholder="Склад"><textarea id="p2" placeholder="Опис"></textarea><button class="btn" style="width:100%" onclick="core.save('patrol')">Зберегти</button><button class="btn" style="background:transparent; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-crime" class="modal"><div class="modal-box"><h3>Додати порушення</h3><input id="cr1" placeholder="Хто порушив"><textarea id="cr2" placeholder="Суть"></textarea><button class="btn" style="width:100%" onclick="core.save('crime')">Записати</button><button class="btn" style="background:transparent; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
+    <div id="m-pwd" class="modal"><div class="modal-box"><h3>Новий пароль</h3><p id="pwdTarget" style="color:var(--gold)"></p><input id="newP" placeholder="Введіть новий код"><button class="btn" style="width:100%" onclick="core.saveNewPwd()">Оновити</button></div></div>
 
     <script>
         const firebaseConfig = { databaseURL: "https://vsp-02-default-rtdb.europe-west1.firebasedatabase.app/" };
@@ -97,14 +102,9 @@
         const db = firebase.database();
 
         const POSITIONS = { 
-            "0": {n:"Куратор ВСП", c:"#a855f7", rank: 0}, 
-            "1": {n:"Начальник", c:"#fbbf24", rank: 1}, 
-            "2": {n:"Заст. Нач.", c:"#fbbf24", rank: 2},
-            "3": {n:"Нач. НЦ", c:"#38bdf8", rank: 3}, 
-            "4": {n:"Заст. Нач. НЦ", c:"#38bdf8", rank: 4}, 
-            "5": {n:"Інструктор", c:"#60a5fa", rank: 5},
-            "7": {n:"Бієць", c:"#10b981", rank: 6}, 
-            "8": {n:"Курсант ВСП", c:"#64748b", rank: 7} 
+            "0": {n:"Куратор ВСП", c:"#a855f7", rank:0}, "1": {n:"Начальник", c:"#fbbf24", rank:1}, "2": {n:"Заст. Нач.", c:"#fbbf24", rank:2},
+            "3": {n:"Нач. НЦ", c:"#38bdf8", rank:3}, "4": {n:"Заст. Нач. НЦ", c:"#38bdf8", rank:4}, "5": {n:"Інструктор", c:"#60a5fa", rank:5},
+            "7": {n:"Бієць", c:"#10b981", rank:6}, "8": {n:"Курсант ВСП", c:"#64748b", rank:7} 
         };
 
         const core = {
@@ -115,14 +115,15 @@
                 setTimeout(() => t.remove(), 3000);
             },
             login() {
-                const l = document.getElementById('uL').value.trim(), p = document.getElementById('uP').value;
+                const e = document.getElementById('uE').value.trim(), l = document.getElementById('uL').value.trim(), p = document.getElementById('uP').value;
+                if(!e || !l) return this.toast("❌ Заповніть Email та Прізвище");
                 db.ref('users/' + l).once('value', (s) => {
                     const u = s.val();
                     if(u && u.p === p) { this.user = u; this.finish(); }
                     else if(!u && p === "5588") {
-                        this.user = { l: l, p: p, pos: (l === 'Артем Кацура' ? "0" : "8") };
+                        this.user = { l: l, p: p, e: e, pos: (l === 'Артем Кацура' ? "0" : "8") };
                         db.ref('users/' + l).set(this.user).then(() => this.finish());
-                    } else this.toast("❌ Помилка");
+                    } else this.toast("❌ Помилка входу");
                 });
             },
             finish() { localStorage.setItem('vsp_session', JSON.stringify(this.user)); location.reload(); },
@@ -131,18 +132,23 @@
             
             init() {
                 document.getElementById('authScreen').style.display = 'none';
-                
-                // МОМЕНТАЛЬНИЙ ВИКІД (KICK)
                 db.ref('users/' + this.user.l).on('value', (s) => {
-                    if(!s.exists()) {
-                        alert("Ваш акаунт видалено з системи.");
-                        this.logout();
-                    }
+                    if(!s.exists()) this.logout();
                     this.user = s.val();
                     const p = POSITIONS[this.user.pos || "8"];
                     document.getElementById('uLabel').innerHTML = `<span style="color:${p.c}">${p.n}</span> // ${this.user.l}`;
                     document.getElementById('admMenu').style.display = (this.user.l === 'Артем Кацура') ? 'flex' : 'none';
                     this.sync();
+                    this.autoClean();
+                });
+            },
+            autoClean() {
+                db.ref('data/patrol').once('value', snap => {
+                    const data = snap.val(); const now = new Date().getTime();
+                    for(let k in data) {
+                        const postDate = new Date(data[k].rawDate).getTime();
+                        if(now - postDate > 7 * 24 * 60 * 60 * 1000) db.ref('data/patrol/' + k).remove();
+                    }
                 });
             },
             nav(id, el) {
@@ -153,12 +159,14 @@
             },
             openM(id) { document.getElementById(id).classList.add('active'); },
             cls() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
-            openPwd(name) { this.curEdit = name; document.getElementById('pwdTarget').innerText = name; this.openM('m-pwd'); },
-            saveNewPwd() {
-                db.ref(`users/${this.curEdit}/p`).set(document.getElementById('newP').value).then(() => { this.toast("✅ Пароль змінено"); this.cls(); });
+            save(t) {
+                let d = { author: this.user.l, ts: new Date().toLocaleString('uk-UA'), rawDate: new Date().toISOString() };
+                if(t==='patrol') d={...d, a: document.getElementById('p1').value, b: document.getElementById('p2').value };
+                if(t==='crime') d={...d, a: document.getElementById('cr1').value, b: document.getElementById('cr2').value };
+                db.ref('data/' + t).push(d).then(() => { this.toast("✅ Додано"); this.cls(); });
             },
             sync() {
-                db.ref('data').on('value', (snap) => {
+                db.ref('data').on('value', snap => {
                     const d = snap.val() || {}, canDel = ["0", "1", "2"].includes(String(this.user.pos));
                     const render = (id, data, cols) => {
                         let h = ''; for(let k in data) {
@@ -167,40 +175,27 @@
                         }
                         const b = document.getElementById(`b-${id}`); if(b) b.innerHTML = h;
                     };
-                    render('cars', d.cars, ['a', 'b', 'c']);
-                    render('patrol', d.patrol, ['ts', 'a', 'b']);
-                    document.getElementById('v1').innerText = Object.keys(d.cars || {}).length;
+                    render('patrol', d.patrol, ['ts', 'a', 'b']); render('crime', d.crime, ['ts', 'a', 'b']);
+                    document.getElementById('v3').innerText = Object.keys(d.patrol || {}).length;
                 });
-                
-                db.ref('users').on('value', (snap) => {
-                    const us = Object.values(snap.val() || {});
-                    // СУВОРА ІЄРАРХІЯ
-                    us.sort((a, b) => (POSITIONS[a.pos]?.rank || 9) - (POSITIONS[b.pos]?.rank || 9));
-
+                db.ref('users').on('value', snap => {
+                    const us = Object.values(snap.val() || {}).sort((a,b) => (POSITIONS[a.pos]?.rank || 9) - (POSITIONS[b.pos]?.rank || 9));
                     let hS = '', hA = '';
                     us.forEach(u => {
                         const p = POSITIONS[u.pos || "8"];
-                        hS += `<tr><td><span style="color:${p.c}">${p.n}</span></td><td>${u.l}</td><td><span style="color:#10b981">●</span></td></tr>`;
-                        
+                        hS += `<tr><td><span style="color:${p.c}">${p.n}</span></td><td>${u.l}</td><td>${u.e || '-'}</td></tr>`;
                         if(this.user.l === 'Артем Кацура') {
-                            const isMe = u.l === 'Артем Кацура';
-                            hA += `<tr><td>${u.l}</td><td>
-                                <select onchange="db.ref('users/${u.l}/pos').set(this.value)">
-                                    ${Object.entries(POSITIONS).map(([k,v]) => `<option value="${k}" ${u.pos===k?'selected':''}>${v.n}</option>`).join('')}
-                                </select>
-                            </td><td>
-                                <button class="btn" style="background:var(--accent)" onclick="core.openPwd('${u.l}')">🔑</button>
-                                ${isMe ? '' : `<button class="btn-red" onclick="if(confirm('Видалити користувача?')) db.ref('users/${u.l}').remove()">X</button>`}
-                            </td></tr>`;
+                            hA += `<tr><td>${u.l}</td><td><select onchange="db.ref('users/${u.l}/pos').set(this.value)">${Object.entries(POSITIONS).map(([k,v])=>`<option value="${k}" ${u.pos===k?'selected':''}>${v.n}</option>`).join('')}</select></td><td><button class="btn" onclick="core.openPwd('${u.l}')">🔑</button> ${u.l==='Артем Кацура'?'':`<button class="btn-red" onclick="db.ref('users/${u.l}').remove()">X</button>`}</td></tr>`;
                         }
                     });
                     document.getElementById('b-sol').innerHTML = hS;
                     document.getElementById('b-adm').innerHTML = hA;
                     document.getElementById('v2').innerText = us.length;
                 });
-            }
+            },
+            openPwd(n) { this.curEdit = n; document.getElementById('pwdTarget').innerText = n; this.openM('m-pwd'); },
+            saveNewPwd() { db.ref(`users/${this.curEdit}/p`).set(document.getElementById('newP').value).then(()=>{this.toast("✅");this.cls();}); }
         };
-
         document.getElementById('authBtn').onclick = () => core.login();
         window.onload = () => core.auto();
     </script>
