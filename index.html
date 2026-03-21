@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ВСП: ТЕРМІНАЛ v7.6 (Ultimate Privacy)</title>
+    <title>ВСП: ТЕРМІНАЛ v7.7 (Control & Kick)</title>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -12,15 +12,13 @@
         :root { --gold: #fbbf24; --bg: #020617; --card: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --danger: #f43f5e; --glass: rgba(255, 255, 255, 0.05); }
         body { font-family: 'Ubuntu', sans-serif; margin: 0; min-height: 100vh; color: #f1f5f9; background: #020617; overflow-x: hidden; }
         
-        /* Адаптивність контейнера */
         .app-container { display: flex; height: 100vh; }
         @media (max-width: 850px) { .app-container { flex-direction: column; height: auto; } }
 
-        /* Меню */
         .sidebar { width: 260px; background: #0f172a; border-right: 1px solid var(--glass); display: flex; flex-direction: column; flex-shrink: 0; }
         @media (max-width: 850px) { 
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--glass); }
-            .nav-list { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
+            .nav-list { display: flex; overflow-x: auto; white-space: nowrap; }
         }
 
         .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 13px; }
@@ -30,19 +28,13 @@
         .main { flex: 1; padding: 20px; overflow-y: auto; background: #020617; }
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--glass); }
         
-        /* Сітка карток на головній */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
-
-        /* Таблиці */
         .table-wrapper { overflow-x: auto; width: 100%; }
         table { width: 100%; border-collapse: collapse; min-width: 500px; }
         td, th { padding: 12px; text-align: left; border-bottom: 1px solid var(--glass); font-size: 13px; }
 
-        /* Кнопки */
         .btn { background: var(--gold); color: #000; border: none; padding: 10px 15px; cursor: pointer; font-weight: 700; border-radius: 12px; font-size: 10px; }
         .btn-red { background: var(--danger); color: white; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 10px; }
         
-        /* Модалки */
         .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(10px); padding: 15px; }
         .modal.active { opacity: 1; pointer-events: auto; }
         .modal-box { width: 100%; max-width: 400px; background: #1e293b; border-radius: 30px; padding: 30px; border: 2px solid var(--gold); }
@@ -65,14 +57,12 @@
 
     <div class="app-container">
         <div class="sidebar">
-            <div style="padding:20px;"><h2 style="color:var(--gold); font-size:16px;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; opacity:0.6;">...</div></div>
+            <div style="padding:20px;"><h2 style="color:var(--gold); font-size:16px;">VSP SYSTEM</h2><div id="uLabel" style="font-size:11px; opacity:0.6;">Завантаження...</div></div>
             <div class="nav-list">
                 <div class="nav-item active" onclick="core.nav('home', this)">🖥 Головна</div>
                 <div class="nav-item" onclick="core.nav('sol', this)">👥 Склад</div>
                 <div class="nav-item" onclick="core.nav('cars', this)">🚗 Авто</div>
                 <div class="nav-item" onclick="core.nav('patrol', this)">🛡 Патрулі</div>
-                <div class="nav-item" onclick="core.nav('crime', this)">⚠️ Порушення</div>
-                <div class="nav-item" onclick="core.nav('criminal', this)" style="color:#f87171">⚖️ КП</div>
                 <div id="admMenu" class="nav-item" style="display:none; color:var(--gold);" onclick="core.nav('adm', this)">⚙️ АДМІН</div>
             </div>
             <div class="nav-item" style="margin-top:auto; color:var(--danger);" onclick="core.logout()">🔒 Вихід</div>
@@ -80,45 +70,32 @@
 
         <div class="main">
             <div id="s-home" class="section">
-                <div class="card" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;">
-                    <h3 style="margin:0">Панель Управління</h3>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn" onclick="core.openM('m-patrol')">✚ ПАТРУЛЬ</button>
-                        <button class="btn" onclick="core.openM('m-car')">✚ АВТО</button>
-                        <button class="btn btn-red" onclick="core.openM('m-criminal')">✚ КП</button>
+                <div class="card">
+                    <h3 style="margin-top:0">Статистика терміналу</h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px;">
+                        <div class="card" style="margin:0; text-align:center;">БІЙЦІ <b id="v2" style="display:block; font-size:24px; color:var(--gold)">0</b></div>
+                        <div class="card" style="margin:0; text-align:center;">АВТО <b id="v1" style="display:block; font-size:24px; color:var(--accent)">0</b></div>
                     </div>
-                </div>
-                <div class="stats-grid">
-                    <div class="card">АВТО <b id="v1" style="display:block; font-size:24px; color:var(--accent)">0</b></div>
-                    <div class="card">БІЙЦІ <b id="v2" style="display:block; font-size:24px; color:var(--gold)">0</b></div>
-                    <div class="card">ПАТРУЛІ <b id="v3" style="display:block; font-size:24px; color:#a855f7">0</b></div>
-                    <div class="card">КП <b id="v5" style="display:block; font-size:24px; color:var(--danger)">0</b></div>
                 </div>
             </div>
 
-            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад</h3><div class="table-wrapper"><table><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th></tr></thead><tbody id="b-sol"></tbody></table></div></div></div>
-            <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><div class="table-wrapper"><table><thead><tr><th>Марка</th><th>Номер</th><th>Статус</th><th>Дія</th></tr></thead><tbody id="b-cars"></tbody></table></div></div></div>
+            <div id="s-sol" class="section" style="display:none;"><div class="card"><h3>Особовий склад (Ієрархія)</h3><div class="table-wrapper"><table><thead><tr><th>Посада</th><th>ПІБ</th><th>Статус</th></tr></thead><tbody id="b-sol"></tbody></table></div></div></div>
+            <div id="s-cars" class="section" style="display:none;"><div class="card"><h3>Реєстр авто</h3><div class="table-wrapper"><table><thead><tr><th>Марка</th><th>Номер</th><th>Стан</th><th>Дія</th></tr></thead><tbody id="b-cars"></tbody></table></div></div></div>
             <div id="s-patrol" class="section" style="display:none;"><div class="card"><h3>Журнал патрулів</h3><div class="table-wrapper"><table><thead><tr><th>Час</th><th>Склад</th><th>Звіт</th><th>Дія</th></tr></thead><tbody id="b-patrol"></tbody></table></div></div></div>
-            <div id="s-crime" class="section" style="display:none;"><div class="card"><h3>Порушення</h3><div class="table-wrapper"><table><thead><tr><th>Дата</th><th>Хто</th><th>Суть</th><th>Дія</th></tr></thead><tbody id="b-crime"></tbody></table></div></div></div>
-            <div id="s-criminal" class="section" style="display:none;"><div class="card"><h3>Кримінальні справи</h3><div class="table-wrapper"><table><thead><tr><th>№</th><th>Стаття</th><th>Фігурант</th><th>Дія</th></tr></thead><tbody id="b-criminal"></tbody></table></div></div></div>
             
             <div id="s-adm" class="section" style="display:none;">
-                <div class="card"><h3>⚙️ Адмін-центр (Тільки Куратор)</h3><div class="table-wrapper"><table><thead><tr><th>ПІБ</th><th>Посада</th><th>Дії</th></tr></thead><tbody id="b-adm"></tbody></table></div></div>
+                <div class="card"><h3>⚙️ Управління доступом</h3><div class="table-wrapper"><table><thead><tr><th>ПІБ</th><th>Посада</th><th>Дії</th></tr></thead><tbody id="b-adm"></tbody></table></div></div>
             </div>
         </div>
     </div>
 
-    <div id="m-pwd" class="modal"><div class="modal-box"><h3>Зміна пароля</h3><p id="pwdTarget" style="font-size:12px; color:var(--gold)"></p><input id="newP" placeholder="Новий код"><button class="btn" style="width:100%" onclick="core.saveNewPwd()">Оновити</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
-    <div id="m-patrol" class="modal"><div class="modal-box"><h3>Новий звіт</h3><input id="p1" placeholder="Склад"><textarea id="p2" placeholder="Опис"></textarea><button class="btn" style="width:100%" onclick="core.save('patrol')">Зберегти</button><button class="btn" style="background:transparent; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
-    <div id="m-car" class="modal"><div class="modal-box"><h3>Додати авто</h3><input id="car1" placeholder="Марка"><input id="car2" placeholder="Номер"><select id="car3"><option>В строю</option><option>Ремонт</option></select><button class="btn" style="width:100%" onclick="core.save('cars')">Зберегти</button></div></div>
-    <div id="m-criminal" class="modal"><div class="modal-box"><h3>Нове КП</h3><input id="crm1" placeholder="№"><input id="crm2" placeholder="Стаття"><button class="btn btn-red" style="width:100%" onclick="core.save('criminal')">Створити</button></div></div>
+    <div id="m-pwd" class="modal"><div class="modal-box"><h3>Новий пароль</h3><p id="pwdTarget" style="color:var(--gold)"></p><input id="newP" placeholder="Введіть код"><button class="btn" style="width:100%" onclick="core.saveNewPwd()">Змінити</button><button class="btn" style="background:transparent; color:#64748b; width:100%; margin-top:10px;" onclick="core.cls()">Назад</button></div></div>
 
     <script>
         const firebaseConfig = { databaseURL: "https://vsp-02-default-rtdb.europe-west1.firebasedatabase.app/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Порядок ієрархії для сортування (0 - найвищий)
         const POSITIONS = { 
             "0": {n:"Куратор ВСП", c:"#a855f7", rank: 0}, 
             "1": {n:"Начальник", c:"#fbbf24", rank: 1}, 
@@ -145,20 +122,25 @@
                     else if(!u && p === "5588") {
                         this.user = { l: l, p: p, pos: (l === 'Артем Кацура' ? "0" : "8") };
                         db.ref('users/' + l).set(this.user).then(() => this.finish());
-                    } else this.toast("❌ Відмова");
+                    } else this.toast("❌ Помилка");
                 });
             },
             finish() { localStorage.setItem('vsp_session', JSON.stringify(this.user)); location.reload(); },
             auto() { const s = localStorage.getItem('vsp_session'); if(s) { this.user = JSON.parse(s); this.init(); } },
             logout() { localStorage.removeItem('vsp_session'); location.reload(); },
+            
             init() {
                 document.getElementById('authScreen').style.display = 'none';
+                
+                // МОМЕНТАЛЬНИЙ ВИКІД (KICK)
                 db.ref('users/' + this.user.l).on('value', (s) => {
+                    if(!s.exists()) {
+                        alert("Ваш акаунт видалено з системи.");
+                        this.logout();
+                    }
                     this.user = s.val();
                     const p = POSITIONS[this.user.pos || "8"];
                     document.getElementById('uLabel').innerHTML = `<span style="color:${p.c}">${p.n}</span> // ${this.user.l}`;
-                    
-                    // ПРИВАТНІСТЬ АДМІНКИ (Тільки Артем Кацура)
                     document.getElementById('admMenu').style.display = (this.user.l === 'Артем Кацура') ? 'flex' : 'none';
                     this.sync();
                 });
@@ -173,41 +155,32 @@
             cls() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('active')); },
             openPwd(name) { this.curEdit = name; document.getElementById('pwdTarget').innerText = name; this.openM('m-pwd'); },
             saveNewPwd() {
-                db.ref(`users/${this.curEdit}/p`).set(document.getElementById('newP').value).then(() => { this.toast("✅ Оновлено"); this.cls(); });
-            },
-            save(t) {
-                let d = { author: this.user.l, ts: new Date().toLocaleString('uk-UA') };
-                if(t==='patrol') d={...d, a: document.getElementById('p1').value, b: document.getElementById('p2').value };
-                if(t==='cars') d={...d, a: document.getElementById('car1').value, b: document.getElementById('car2').value, c: document.getElementById('car3').value };
-                if(t==='criminal') d={...d, a: document.getElementById('crm1').value, b: document.getElementById('crm2').value };
-                db.ref('data/' + t).push(d).then(() => { this.toast("✅ Додано"); this.cls(); });
+                db.ref(`users/${this.curEdit}/p`).set(document.getElementById('newP').value).then(() => { this.toast("✅ Пароль змінено"); this.cls(); });
             },
             sync() {
                 db.ref('data').on('value', (snap) => {
-                    const d = snap.val() || {}, can = ["0", "1", "2"].includes(String(this.user.pos));
+                    const d = snap.val() || {}, canDel = ["0", "1", "2"].includes(String(this.user.pos));
                     const render = (id, data, cols) => {
                         let h = ''; for(let k in data) {
                             h += `<tr>`; cols.forEach(c => h += `<td>${data[k][c] || ''}</td>`);
-                            h += `<td>${can ? `<button class="btn-red" onclick="db.ref('data/${id}/${k}').remove()">X</button>` : '-'}</td></tr>`;
+                            h += `<td>${canDel ? `<button class="btn-red" onclick="db.ref('data/${id}/${k}').remove()">X</button>` : '-'}</td></tr>`;
                         }
                         const b = document.getElementById(`b-${id}`); if(b) b.innerHTML = h;
                     };
-                    render('cars', d.cars, ['a', 'b', 'c']); render('patrol', d.patrol, ['ts', 'a', 'b']);
-                    render('criminal', d.criminal, ['a', 'b']);
+                    render('cars', d.cars, ['a', 'b', 'c']);
+                    render('patrol', d.patrol, ['ts', 'a', 'b']);
                     document.getElementById('v1').innerText = Object.keys(d.cars || {}).length;
-                    document.getElementById('v3').innerText = Object.keys(d.patrol || {}).length;
-                    document.getElementById('v5').innerText = Object.keys(d.criminal || {}).length;
                 });
                 
                 db.ref('users').on('value', (snap) => {
                     const us = Object.values(snap.val() || {});
-                    // СОРТУВАННЯ ЗА ІЄРАРХІЄЮ
+                    // СУВОРА ІЄРАРХІЯ
                     us.sort((a, b) => (POSITIONS[a.pos]?.rank || 9) - (POSITIONS[b.pos]?.rank || 9));
 
                     let hS = '', hA = '';
                     us.forEach(u => {
                         const p = POSITIONS[u.pos || "8"];
-                        hS += `<tr><td><span style="color:${p.c}">${p.n}</span></td><td>${u.l}</td><td>Online</td></tr>`;
+                        hS += `<tr><td><span style="color:${p.c}">${p.n}</span></td><td>${u.l}</td><td><span style="color:#10b981">●</span></td></tr>`;
                         
                         if(this.user.l === 'Артем Кацура') {
                             const isMe = u.l === 'Артем Кацура';
@@ -217,7 +190,7 @@
                                 </select>
                             </td><td>
                                 <button class="btn" style="background:var(--accent)" onclick="core.openPwd('${u.l}')">🔑</button>
-                                ${isMe ? '' : `<button class="btn-red" onclick="db.ref('users/${u.l}').remove()">X</button>`}
+                                ${isMe ? '' : `<button class="btn-red" onclick="if(confirm('Видалити користувача?')) db.ref('users/${u.l}').remove()">X</button>`}
                             </td></tr>`;
                         }
                     });
@@ -227,6 +200,7 @@
                 });
             }
         };
+
         document.getElementById('authBtn').onclick = () => core.login();
         window.onload = () => core.auto();
     </script>
